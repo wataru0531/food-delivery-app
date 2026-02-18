@@ -5,6 +5,9 @@
 // 👉 ページに入る前に「ログイン確認」と「トークン更新」をする
 //    ... ⭐️ /proxy.ts (middleware）から呼ばれる関数
 
+// 👉 proxy.tsかmiddleware.tsにリダイレクト処理をかますことで、
+//    各ファイルでリダイレクト処理を書く必要がなくなる。
+
 // ① ユーザーがページにアクセス
 // ② proxy が最初に動く 👉 ここで、updateSessionが発火
 // ③ ログイン確認
@@ -14,6 +17,7 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+
 
 export async function updateSession(request: NextRequest) {
   // 後にCookieを入れる変数を作成
@@ -45,7 +49,7 @@ export async function updateSession(request: NextRequest) {
   )
 
   // ⭐️ ログイン確認
-  // getClaims() → JWTの署名を検証、トークンが期限内かどうあチェック、毎回公開鍵で検証をおこなう
+  // getClaims() → JWTの署名を検証、トークンが期限内かどうかチェック、毎回公開鍵で検証をおこなう
   // また、必要ならリフレッシュトークンを行う。
   // 👉 なければログイン画面に、あればそのCookieを返す
   const { data } = await supabase.auth.getClaims()
@@ -53,12 +57,14 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims
 
   if (
-    !user && // ユーザーがいない場合
+    // ユーザーがいなくて、今アクセスしているURLが /login でも /auth でもないなら
+    !user && 
     !request.nextUrl.pathname.startsWith('/login') &&
     !request.nextUrl.pathname.startsWith('/auth')
   ) {
     // /loginにリダイレクト
-    const url = request.nextUrl.clone()
+    const url = request.nextUrl.clone() // 直接書き換えないためにclone
+    console.log(url);
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
