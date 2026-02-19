@@ -8,6 +8,14 @@
 // 自動でサーバー実行 → "use server" と書くだけ
 // フロントとサーバーとの境界が消えた
 
+// 👉 通常の通信処理
+// UI → fetch → API → DB → JSON → UI更新
+// データを送って → データを受け取って → 自分で画面を更新する
+
+// 👉 サーバーアクション
+// UI(form / button) → Server Action 発火 → DB操作 → 自動で再レンダリング → UI更新
+// サーバーに任せたら、新しい画面がそのまま返ってくる
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation"
 
@@ -16,7 +24,19 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function login() {
   // Googleログイン
-  console.log("Google Login")
+  // console.log("Google Login");
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google", // Googleでログインするので
+    options: {
+      redirectTo: 'http://localhost:3000/auth/callback', // → 認証が済んだ時のリダイレクト先
+    },
+  })
+
+  if (data.url) {
+    redirect(data.url) // use the redirect API for your server framework
+  }
 
 }
 

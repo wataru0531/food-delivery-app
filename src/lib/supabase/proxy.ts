@@ -18,14 +18,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-
 export async function updateSession(request: NextRequest) {
   // 後にCookieを入れる変数を作成
   // NextResponse → Next.jsが用意している、middleware専用のResponseオブジェクト
   // next() → ブロックしないで次へ進める
-  // requestオブジェクト → この request オブジェクトを使って続行してください」という意味。
-  //                     👉 Cookie情報が入っている
-  // NextResponse.next() ... この request をそのまま次の処理へ渡して続行してください」という指示
+  // requestオブジェクト → 「この request オブジェクトを使って続行してください」という意味。
+  //                     👉 ブラウザから送られたCookie情報が入っている
+  // NextResponse.next() ... レスポンスオブジェクトを生成している
+  //                         この request をそのまま次の処理へ渡して続行してください」という指示
   let supabaseResponse = NextResponse.next({ request })
 
   // サーバー用Supabaseクライアント
@@ -34,8 +34,9 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: { // Cookieの読み書きを定義。Supabaseに教えている
-        getAll() {
-          return request.cookies.getAll(); // リクエストのCookieをSupabaseに渡す
+        // ✅ supabase.auth.getClaims()の処理の中で、cookieの更新などが必要になったときに Supabase が呼び出す関数
+        getAll() { // リクエストのCookieを取得
+          return request.cookies.getAll();
         },
         setAll(cookiesToSet) { // トークン更新が必要なら書き戻せるようにする
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
