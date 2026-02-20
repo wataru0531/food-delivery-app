@@ -31,10 +31,11 @@ export async function login() {
     provider: "google", // Googleでログインするので
     options: {
       redirectTo: 'http://localhost:3000/auth/callback', // → 認証が済んだ時のリダイレクト先
+                                                         //   callback.tsのGETを発火 
     },
   })
 
-  if (data.url) {
+  if(data.url) {
     redirect(data.url) // use the redirect API for your server framework
   }
 

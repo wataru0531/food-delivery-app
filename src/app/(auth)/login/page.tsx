@@ -1,15 +1,19 @@
 
 // login
 
+import { Button } from "@/components/ui/button";
+
 import { login } from "./actions"
 
 
 export default function LoginPage() {
   return (
     <form>
-
-      <button formAction={ login }>Login</button>
-
+      <Button 
+        formAction={ login } 
+        variant="outline"
+        size="lg"
+      >Login</Button>
     </form>
   )
 }
