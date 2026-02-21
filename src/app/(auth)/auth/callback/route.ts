@@ -32,12 +32,16 @@ export async function GET(request: Request) {
 
     // ✅ JWTセッションをCookieに保存する処理
     // ① Googleログイン
-    // ② Googleが code を発行
+    // ② Googleが code(認可コード) をブラウザ経由でアプリに発行
     // ③ アプリが code を受け取る
-    // ④ SupabaseがGoogleに code を渡す 👉 ここで裏側で起きる処理
-    // ⑤ Googleが access_token を返す
+    // ④ SupabaseがGoogleのトークンエンドポイントに code を渡す 👉 ここからが exchangeCodeForSession
+    //    → Googleが最初からアクセストークンをブラウザに渡していたら、JSから簡単に盗めるため
+    // ⑤ Googleが認可コードを access_token に交換して返す
     // ⑥ Supabaseがその情報を検証
     // ⑦ Supabaseが独自のJWTセッションを発行
+    //    → グーブルが発行するアクセストークンは“Google用”だから
+    //      アプリのユーザー管理を統一するため
+    //      セキュリティと制御のため
     // ⑧ Cookieに保存
     // ※ Cookieに保存した場合は、自動でサーバーにも送信される
     // ⑨ 次回アクセス時、サーバーがCookieからJWT読み取り

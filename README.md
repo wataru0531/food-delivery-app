@@ -3,6 +3,9 @@
 - Supabase
   - Authentication
 - Shadcn/ui
+  -https://ui.shadcn.com/
+- Lucide React icon
+  - https://lucide.dev/
 
 
 ## Learn More
