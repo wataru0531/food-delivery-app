@@ -4,6 +4,19 @@ import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
+// ✅ cva ... class-variance-authority
+// 👉 条件によってclassを切り替える関数を返す
+// const buttonVariants = cva(
+//   "基本クラス",
+//   {
+//     variants: {
+//       variant: { ... },
+//       size: { ... }
+//     }
+//   }
+// )
+
+// 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
@@ -38,23 +51,34 @@ const buttonVariants = cva(
   }
 )
 
+// console.log(buttonVariants)
+
+
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
-  const Comp = asChild ? Slot.Root : "button"
+}: React.ComponentProps<"button"> & // 通常のbuttonが持っているprops全て(onClickやdisabledなど)
+  VariantProps<typeof buttonVariants> & // cvaで定義したvariantとsizeを型として自動生成
+                                        // ↓ これらを自動生成
+                                        // {
+                                        //   variant?: "default" | "ghost" | ...
+                                        //   size?: "default" | "icon" | ...
+                                        // }
+  { asChild?: boolean } // 
+) {
+  const Comp = asChild ? Slot.Root : "button"; // Radixのslotを使うか(true)、普通のbuttonを使うか
 
   return (
     <Comp
       data-slot="button"
       data-variant={variant}
       data-size={size}
+      // buttonVariants() → クラス文字列が返る 👉 クラス文字列を生成して返す関数
+      // cn() → クラス名を整理して結合
+      // 
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />

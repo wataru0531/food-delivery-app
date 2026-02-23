@@ -5,7 +5,8 @@
 // Supabaseをブラウザ（Client Component）で使うための“専用の接続装置”
 
 
-import { createBrowserClient } from '@supabase/ssr'
+import { createBrowserClient } from '@supabase/ssr';
+
 export function createClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

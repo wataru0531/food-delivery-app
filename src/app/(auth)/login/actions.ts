@@ -22,6 +22,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server";
 
 
+// ✅ ログイン
 export async function login() {
   // Googleログイン
   // console.log("Google Login");
@@ -33,7 +34,9 @@ export async function login() {
       redirectTo: 'http://localhost:3000/auth/callback', // → 認証が済んだ時のリダイレクト先
                                                          //   callback.tsのGETを発火 
     },
-  })
+  });
+
+  if(error) console.error(error);
 
   if(data.url) {
     redirect(data.url) // use the redirect API for your server framework
@@ -41,3 +44,13 @@ export async function login() {
 
 }
 
+
+// ✅ ログアウト
+export async function logout(){
+  const supabase = await createClient();
+  
+  const { error } = await supabase.auth.signOut();
+  if(error) console.error(error);
+
+  redirect("/login");
+}
