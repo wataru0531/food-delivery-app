@@ -15,9 +15,7 @@ export function TextToggleButton(){
   }
 
   return(
-    <Button 
-      onClick={ handleChange }
-    >
+    <Button onClick={ handleChange } className="xl:not-even:hover:cursor-pointer">
       { isExpanded ? "表示を戻す" : "すべて表示" }
     </Button>
   )

@@ -108,7 +108,7 @@ export default async function MenuSheet() {
             {/* サーバー側でログアウト処理をする */}
             <Button
               formAction={ logout }
-              className="w-full"
+              className="w-full xl:hover:cursor-pointer"
             >Logout</Button>
           </form>
         </SheetFooter>

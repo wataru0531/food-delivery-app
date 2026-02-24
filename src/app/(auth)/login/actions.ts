@@ -16,7 +16,6 @@
 // UI(form / button) → Server Action 発火 → DB操作 → 自動で再レンダリング → UI更新
 // サーバーに任せたら、新しい画面がそのまま返ってくる
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation"
 
 import { createClient } from "@/lib/supabase/server";
