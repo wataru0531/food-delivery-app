@@ -15,9 +15,11 @@ type CarouselContainerProps = {
 }
 
 export default function CarouselContainer({ 
-  children,
-  slideToShow,
+  children, // Restaurantの配列
+  slideToShow, // 幅をカード
 }: CarouselContainerProps){
+  // console.log(children); // RestaurantCardの配列 (5) [{$$typeof: Symbol(react.transitional.element),...}, (...), (...), (...), (...)]
+
   return (
     <Carousel
       opts={{

@@ -19,6 +19,8 @@ export default function Section({ children, title }: SectionProps){
         <h2 className="py-5 font-bold text-2xl">{ title }</h2>
         <TextToggleButton />
       </div>
+
+      {/* CarouselContainer */}
       { children }
     </section>
   )
