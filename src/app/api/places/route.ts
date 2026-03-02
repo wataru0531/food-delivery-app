@@ -1,7 +1,6 @@
 
 // ✅ レストランのデータを取得するAPI
-// → /lib/restaurants/api.ts の fetchRamenRestaurants は POSTだとキャッシュが効かないので
-//   ここに記述
+//   API routesを使った場合
 
 import { GooglePlacesSearchApiResponse } from "@/types";
 import { NextResponse } from "next/server";

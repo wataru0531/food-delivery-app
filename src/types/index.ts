@@ -11,7 +11,7 @@ export type PlaceSearchResult =  {
   displayName?: {
     languageCode?: string,
     text?: string,
-  }
+  };
   primaryType?: string;
   photos?: PlacePhoto[]; // 配列
 }
