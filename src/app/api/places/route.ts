@@ -1,5 +1,10 @@
 
 // ✅ レストランのデータを取得するAPI
+// → /lib/restaurants/api.ts の fetchRamenRestaurants は POSTだとキャッシュが効かないので
+//   ここに記述
+
+import { GooglePlacesSearchApiResponse } from "@/types";
+import { NextResponse } from "next/server";
 
 // app/api/places/route.ts
 
@@ -12,14 +17,14 @@ export async function GET() {
   const header = {
     "Content-Type": "application/json",
     "X-Goog-Api-Key": apiKey!,  // APIキー。undefinedの可能性はないので!をつける
-    "X-Goog-FieldMask": "places.id,places.displayName,places.types,places.primaryType,places.photos" 
+    "X-Goog-FieldMask": "places.id,places.displayName,places.primaryType,places.photos" 
     // 欲しいフィールド(データ)を指定。空白は作らない
     // * → 全てを取得(api料金が高くなる)
   }
 
   // 指定した地点から、半径500メートルの範囲の10件のデータを取得する
   const requestBody = {
-    includedPrimaryTypes: ["ramen-restaurant"], // 欲しい情報(プレイスタイプ)
+    includedPrimaryTypes: ["ramen_restaurant"], // 欲しい情報(プレイスタイプ)
                                            // https://developers.google.com/maps/documentation/places/web-service/place-types?hl=ja&_gl=1*15zugjc*_up*MQ..*_ga*MTMwMDQ2NTUxMC4xNzcyMTgxMzk0*_ga_SM8HXJ53K2*czE3NzIxODEzOTMkbzEkZzAkdDE3NzIxODEzOTMkajYwJGwwJGgw*_ga_NRWSTWS78N*czE3NzIxODY1MTAkbzIkZzEkdDE3NzIxODY1NDAkajMwJGwwJGgw
     maxResultCount: 10, // 取得するデータの件数
     locationRestriction: { // 取得するデータの地点
@@ -46,10 +51,25 @@ export async function GET() {
                           // 毎回必ず最新データを取得
                           // 完全にキャッシュしない
                           // 動的データ向き（ログイン、検索、ランキングなど）
-    next: { revalidate: 86400 } // 24時間でキャッシュ。24時間後にキャッシュを再取得
+    // next: { revalidate: 86400 } // ⭐️ 24時間でキャッシュ。24時間後にキャッシュを再取得
+                                  // → 今回はHome.ts側でキャッシュする(fetch自体をキャッシュしている)
+                                  // ここでrevalidateを敷けば、このapiをキャッシュする
   });
 
-  const data = await response.json();
+  if (!response.ok) {
+  const errorText = await response.text();
+  console.error(errorText);
+
+  // Next.jsのRoute Handler →、必ず NextResponse を返す必要がある。
+  return NextResponse.json(
+    { error: `NearbySearch失敗: ${response.status}` },
+    { status: response.status }
+  );
+}
+
+  const data:GooglePlacesSearchApiResponse = await response.json();
   // console.log(data); // {places: Array(10)}、
                     //  0: {id: 'ChIJWTGPjmaAhYARxz6l1hOj92w', types: Array(11), displayName: {…}, primaryType: 'historical_landmark', photos: Array(10)}
+  // console.log("データ取得完了");
+  return NextResponse.json(data);
 }

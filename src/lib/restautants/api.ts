@@ -2,7 +2,6 @@
 // ✅ レストランに関するAPI 
 // → ⭐️ キャッシュがPOSTでは効かないので、app/api/places/route.ts に記述
 
-
 export async function fetchRamenRestaurants(){
   const url = "https://places.googleapis.com/v1/places:searchNearby";
   const apiKey = process.env.GOOGLE_API_KEY;
