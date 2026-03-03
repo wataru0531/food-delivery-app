@@ -21,5 +21,14 @@ export type GooglePlacesSearchApiResponse = {
 }
 
 
+// 整形後のラーメンレストランの型
+export type RestaurantType = {
+  id: string;
+  restaurantName?: string;
+  primaryType?: string;
+  photoUrl?: string;
+}
+
+
 
 

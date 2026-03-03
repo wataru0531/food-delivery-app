@@ -52,7 +52,6 @@ export async function fetchRamenRestaurants(){
   if(!response.ok) {
     const errorData = await response.json();
     console.error(errorData);
-
     return { error: `NearbySearchリクエスト失敗 : ${response.status}` }
   }
 
@@ -73,10 +72,24 @@ export async function fetchRamenRestaurants(){
 
   const nearbyRamenPlaces = data.places;
 
-  transformPlaceResult(nearbyRamenPlaces);
+  const ramenRestaurants = await transformPlaceResult(nearbyRamenPlaces); // 取得したデータを扱いやすいように整形
+  // console.log(ramenRestaurants);
+  // (2) [{id: 'ChIJ58ZWi1IEAWARVLLkq8lYNj4', restaurantName: 'RA－MEN 赤影', primaryType: 'ramen_restaurant', photoUrl: 'https://places.googleapis.com/v1/places/ChIJ58ZWi1…yBa8qlrcwFyauWD-CE8Uopl7FsQP0oSjvI&maxWidthPx=400'}, {…}, _debugInfo: Array(1)]
 
-  return data;
+  return { data: ramenRestaurants };
 }
 
 
+// ✅ Photosの画像urlを配列に加工して取得
+// → 画像1枚に対し1円かかる、それを一度に10枚取得するので1度のリクエストで10円かかってしまう。
+//   キャッシュを利生して金がかからないようにする。
+export async function getPhotoUrl(name: string, maxWidth = 400){
+  "use cache"; // 👉 これより以下のコードがキャッシュされるのではなく、実行結果がキャッシュされる
+               //    関数の中身が実行されるというよりも、保存されたreturnの値がそのまま返される。 
+  // console.log("use cache!"); // Cache  use cache!
 
+  const apiKey = process.env.GOOGLE_API_KEY;
+  const url = `https://places.googleapis.com/v1/${name}/media?key=${apiKey}&maxWidthPx=${maxWidth}`
+
+  return url;
+}

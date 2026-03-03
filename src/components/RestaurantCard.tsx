@@ -8,6 +8,7 @@ import React from 'react';
 import Image from "next/image";
 import Link from "next/link";
 import { Heart } from 'lucide-react';
+import { RestaurantType } from '@/types';
 
 // ✅ Imageコンポーネント
 // width/height指定モード → 指定した width × height からアスペクト比を計算
@@ -21,7 +22,15 @@ import { Heart } from 'lucide-react';
 //                object-fit がほぼ必須
 //                width、heightは指定できない
 
-const RestaurantCard: React.FC = () => {
+type RestaurantCardProps = {
+  restaurant: RestaurantType
+}
+
+const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
+  const { id, restaurantName, primaryType, photoUrl  } = restaurant;
+  // console.log(restaurant);
+  // {id: 'ChIJ58ZWi1IEAWARVLLkq8lYNj4', restaurantName: 'RA－MEN 赤影', primaryType: 'ramen_restaurant', photoUrl: 'no-image.jpeg'}
+
   return (
       <div className="relative">
         <Link href="/abc" className="absolute w-full h-full z-10"></Link>
@@ -30,12 +39,12 @@ const RestaurantCard: React.FC = () => {
         */}
         <div className="relative aspect-video rounded-lg overflow-hidden">
           <Image 
-            src={"/no-image.jpeg"} 
+            src={ photoUrl ?? "/no-image.jpeg" } // undefinedの可能性があるならエラーが出るのでフォールバックを用意 
             // width="300" 
             // height="400" 
             className="object-cover"
             fill
-            alt="wataru"
+            alt={ restaurantName ?? "ラーメン店" }
             // loading="eager" // 即読み込む
             // priority // 👉 LCP(最重要画像)だから最優先で読み込めという命令。eager扱い
                      //  → Largest Contentful Paint ... サイトで物理的に大きい要素になっている
@@ -49,7 +58,7 @@ const RestaurantCard: React.FC = () => {
           />
         </div>
         <div className="flex items-center justify-between">
-          <p className="font-bold">name</p>
+          <p className="font-bold">{ restaurantName ?? "ラーメン店" }</p>
           {/* <div>rating</div> */}
           <div className="z-20">
             <Heart 
