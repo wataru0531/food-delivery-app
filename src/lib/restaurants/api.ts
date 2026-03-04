@@ -5,6 +5,8 @@
 import { GooglePlacesSearchApiResponse } from "@/types";
 import { transformPlaceResult } from "./utils";
 
+
+// ✅ 近くのラーメン店を取得
 export async function fetchRamenRestaurants(){
   const url = "https://places.googleapis.com/v1/places:searchNearby";
   const apiKey = process.env.GOOGLE_API_KEY;
@@ -12,7 +14,7 @@ export async function fetchRamenRestaurants(){
   const header = {
     "Content-Type": "application/json",
     "X-Goog-Api-Key": apiKey!,  // APIキー。undefinedの可能性はないので!をつける
-    "X-Goog-FieldMask": "places.id,places.displayName,places.types,places.primaryType,places.photos" 
+    "X-Goog-FieldMask": "places.id,places.displayName,places.primaryType,places.photos" 
     // 欲しいフィールド(データ)を指定。空白は作らない
     // * → 全てを取得(api料金が高くなる)
   }
@@ -92,4 +94,89 @@ export async function getPhotoUrl(name: string, maxWidth = 400){
   const url = `https://places.googleapis.com/v1/${name}/media?key=${apiKey}&maxWidthPx=${maxWidth}`
 
   return url;
+}
+
+
+// ✅ 近くのレストランを取得
+export async function fetchRestaurants(){
+  const url = "https://places.googleapis.com/v1/places:searchNearby";
+  const apiKey = process.env.GOOGLE_API_KEY;
+
+  const header = {
+    "Content-Type": "application/json",
+    "X-Goog-Api-Key": apiKey!,  
+    "X-Goog-FieldMask": "places.id,places.displayName,places.types,places.primaryType,places.photos" 
+  }
+
+  const desiredTypes = [ // 取得したいレストランの種別
+    "japanese_restaurant",
+    "cafe",
+    "cafeteria",
+    "coffee_shop",
+    "chinese_restaurant",
+    "fast_food_restaurant",
+    "hamburger_restaurant",
+    "french_restaurant",
+    "italian_restaurant",
+    "pizza_restaurant",
+    "ramen_restaurant",
+    "sushi_restaurant",
+    "korean_restaurant",
+    "indian_restaurant",
+  ];
+
+  const requestBody = {
+    // includedPrimaryTypes: ["ramen_restaurant"], // 5件までしか不可
+    includedTypes: desiredTypes, // 50件ほどは取得できる
+    maxResultCount: 10,
+    locationRestriction: {
+      circle: {
+        center: {
+          latitude: 34.9260799,
+          longitude: 135.708068
+        },
+        radius: 1000.0,
+      },
+    },
+    languageCode: "ja",
+    rankPreference: "DISTANCE",
+  }
+
+  const response = await fetch(url, {
+    method: "POST",
+    body: JSON.stringify(requestBody),
+    headers: header,
+    
+    // cache: "force-cache", // デフォルト。可能ならキャッシュを使う。静的データ向き
+                             // 一回データを取ったら使い回す 
+    // cache: "no-store", // キャッシュを使わない
+                          // 毎回必ず最新データを取得
+                          // 完全にキャッシュしない
+                          // 動的データ向き（ログイン、検索、ランキングなど）
+    next: { revalidate: 86400 } // 24時間でキャッシュ。24時間後にキャッシュを再取得
+  });
+
+  if(!response.ok) {
+    const errorData = await response.json();
+    console.error(errorData);
+    return { error: `NearbySearchリクエスト失敗 : ${response.status}` }
+  }
+
+  const data: GooglePlacesSearchApiResponse = await response.json(); // JSオブジェクトに変換
+
+  if(!data.places){
+    return { data: [] };
+  }
+
+  const nearbyPlaces = data.places;
+  // console.log("nearbyPlaces", nearbyPlaces);
+
+  // ✅ 指定した種別のみを取得する
+  //    取得したレストランのprimaryTypeと、指定した種別が合致したもののみを取得
+  const matchingPlaces = nearbyPlaces.filter(place => place.primaryType && desiredTypes.includes(place.primaryType));
+  // console.log("matchingPlaces", matchingPlaces); // → 取得したデータの件数が減るが欲しいデータのみを取得
+
+  const ramenRestaurants = await transformPlaceResult(matchingPlaces);
+
+  return { data: ramenRestaurants };
 }

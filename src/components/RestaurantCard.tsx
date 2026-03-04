@@ -27,7 +27,7 @@ type RestaurantCardProps = {
 }
 
 const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
-  const { id, restaurantName, primaryType, photoUrl  } = restaurant;
+  const { restaurantName, photoUrl } = restaurant;
   // console.log(restaurant);
   // {id: 'ChIJ58ZWi1IEAWARVLLkq8lYNj4', restaurantName: 'RA－MEN 赤影', primaryType: 'ramen_restaurant', photoUrl: 'no-image.jpeg'}
 
