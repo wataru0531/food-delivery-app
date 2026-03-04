@@ -4,6 +4,7 @@
 
 import CarouselContainer from "@/components/CarouselContainer";
 import RestaurantCard from "@/components/RestaurantCard";
+import { RestaurantList } from "@/components/RestaurantList";
 import Section from "@/components/Section";
 import { fetchRamenRestaurants, fetchRestaurants } from "@/lib/restaurants/api";
 
@@ -23,7 +24,10 @@ export default async function Home() {
         !nearbyRamenRestaurants ? (
           <p>{ nearbyRamenRestaurantsError }</p>
         ) : nearbyRamenRestaurants.length > 0 ? ( // ラーメン店がある場合
-            <Section title="近くのラーメン店">
+            <Section 
+              title="近くのラーメン店" 
+              expandedContent={<RestaurantList />} // リスト表示の時に使う
+            >
               <CarouselContainer slideToShow={4}>
                 {
                   nearbyRamenRestaurants.map((restaurant, idx) => (
@@ -43,7 +47,10 @@ export default async function Home() {
         !nearbyRestaurants ? (
           <p>{ nearbyRestaurantsError }</p>
         ) : nearbyRestaurants.length > 0 ? (
-          <Section title="近くのレストラン">
+          <Section 
+            title="近くのレストラン"
+            expandedContent={ <RestaurantList /> }
+          >
             <CarouselContainer slideToShow={4}>
               {
                 nearbyRestaurants.map((restaurant, idx) => (

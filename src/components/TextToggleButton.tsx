@@ -1,5 +1,6 @@
 
 // TextToggleButton.tsx
+// → Sectionでベタガキするので使わない
 
 "use client"
 
