@@ -15,7 +15,6 @@ type SectionProps = {
 
 
 export default function Section({ children, title, expandedContent }: SectionProps){
-  
   const [ isExpanded, setIsExpanded ] = useState(false);
   const handleChange = () => setIsExpanded(prev => !prev);
 

@@ -3,6 +3,7 @@
 // → ログイン後の画面を入れていく
 
 import CarouselContainer from "@/components/CarouselContainer";
+import { Categories } from "@/components/Categories";
 import RestaurantCard from "@/components/RestaurantCard";
 import { RestaurantList } from "@/components/RestaurantList";
 import Section from "@/components/Section";
@@ -19,6 +20,32 @@ export default async function Home() {
 
   return (
     <>
+      {/* カテゴリーのコンテナ */}
+      <Categories />
+
+
+      {/* ✅ レストラン(ラーメン店含む) */}
+      {
+        !nearbyRestaurants ? (
+          <p>{ nearbyRestaurantsError }</p>
+        ) : nearbyRestaurants.length > 0 ? (
+          <Section 
+            title="近くのレストラン"
+            expandedContent={ <RestaurantList restaurants={ nearbyRestaurants } /> }
+          >
+            <CarouselContainer slideToShow={4}>
+              {
+                nearbyRestaurants.map((restaurant, idx) => (
+                  <RestaurantCard key={ idx } restaurant={ restaurant } />
+                ))
+              }
+            </CarouselContainer>
+          </Section>
+        ) : (
+          <p>近くにレストランがありません。</p>
+        )
+      }
+
       {/* ✅ ラーメン店 */}
       {
         !nearbyRamenRestaurants ? (
@@ -26,7 +53,7 @@ export default async function Home() {
         ) : nearbyRamenRestaurants.length > 0 ? ( // ラーメン店がある場合
             <Section 
               title="近くのラーメン店" 
-              expandedContent={<RestaurantList />} // リスト表示の時に使う
+              expandedContent={<RestaurantList restaurants={ nearbyRamenRestaurants } />} // リスト表示の時に使う
             >
               <CarouselContainer slideToShow={4}>
                 {
@@ -39,28 +66,6 @@ export default async function Home() {
         ) : (
           // ラーメン店がない場合 → 空オブジェクトの時
           <p>近くにラーメン店がありません。</p>
-        )
-      }
-
-      {/* ✅ レストラン(ラーメン店含む) */}
-      {
-        !nearbyRestaurants ? (
-          <p>{ nearbyRestaurantsError }</p>
-        ) : nearbyRestaurants.length > 0 ? (
-          <Section 
-            title="近くのレストラン"
-            expandedContent={ <RestaurantList /> }
-          >
-            <CarouselContainer slideToShow={4}>
-              {
-                nearbyRestaurants.map((restaurant, idx) => (
-                  <RestaurantCard key={ idx } restaurant={ restaurant } />
-                ))
-              }
-            </CarouselContainer>
-          </Section>
-        ) : (
-          <p>近くにレストランがありません。</p>
         )
       }
     </>

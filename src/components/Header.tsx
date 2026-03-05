@@ -7,7 +7,7 @@ import MenuSheet from "./MenuSheet";
 
 export default function Header():JSX.Element {
   return(
-    <header className="w-full h-16 bg-background fixed top-0 left-0">
+    <header className="w-full h-16 bg-background fixed top-0 left-0 z-50">
       <div className="mx-auto px-4 max-w-[1280px] space-x-4 h-full flex items-center">
         <MenuSheet />
 
