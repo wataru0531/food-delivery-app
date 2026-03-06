@@ -1,19 +1,24 @@
 
 // ✅ カテゴリー
 
+"use client";
+
 import Image from "next/image";
 
 import { CategoryType } from "./Categories";
 
 type CategoryPropsType = {
   category: CategoryType;
+  onClick: (type:string) => void;
 }
 
-export function Category({ category: { categoryName, type, imageUrl } }: CategoryPropsType){
-  // console.log(category);
+export function Category({ 
+  category: { categoryName, type, imageUrl },
+  onClick,
+}: CategoryPropsType){
 
   return(
-    <div>
+    <div onClick={ () => onClick(type) }>
       <div className="relative aspect-square rounded-lg overflow-hidden bg-green-100">
         <Image
           src={ imageUrl }

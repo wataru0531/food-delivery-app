@@ -20,9 +20,8 @@ export default async function Home() {
 
   return (
     <>
-      {/* カテゴリーのコンテナ */}
+      {/* ✅ カテゴリーのコンテナ */}
       <Categories />
-
 
       {/* ✅ レストラン(ラーメン店含む) */}
       {

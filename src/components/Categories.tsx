@@ -1,6 +1,11 @@
 
+// ✅
 
-// カテゴリー
+"use client";
+// → 関数を定義する場合もクライアントコンポーネントする
+//   ... 関数はフロントに送られないため
+
+import { useSearchParams, useRouter } from "next/navigation";
 
 import CarouselContainer from "./CarouselContainer";
 import { Category } from "./Category";
@@ -12,6 +17,10 @@ export type CategoryType = {
 }
 
 export function Categories(){
+  const searchParams = useSearchParams();
+  // console.log(searchParams); // ReadonlyURLSearchParams {size: 0}
+  const router = useRouter();
+
   const categories: CategoryType[] = [
     {
       categoryName: "ファーストフード",
@@ -77,11 +86,34 @@ export function Categories(){
   //   imageUrl: "/images/categories/ファーストフード.png",
   // },
 
+  // ✅ カテゴリーをクリックした時の処理
+  //    → typeをクエリパラメータに渡す
+  const searchRestaurant = (_category: string) => {
+    // console.log(_category); // fast_food_restaurant, japanese_restaurant
+
+    // クエリパラメータを設定しておく → 後から実際のurlに反映する
+    const params = new URLSearchParams(searchParams);
+    params.set("category", _category); // 👉 クエリパラメータを追加。urlには表示されない
+
+    // console.log(params); // URLSearchParams {size: 1}
+    
+    // replace → 今のurlから履歴を置き換える。... ブラウザバックで元のurlに戻れない
+    //           ここでは履歴を増やさないようにしている？
+    // push → 新しい履歴を追加してページ遷移させる。... ブラウザバックが可能
+    router.replace(`/search?${params.toString()}`); 
+    // → http://localhost:3000/search?category=fast_food_restaurant
+  
+  }
+
   return(
     <CarouselContainer slideToShow={10}>
       { 
         categories.map(category => (
-          <Category key={category.categoryName} category={ category } />
+          <Category 
+            key={category.categoryName} 
+            category={ category }
+            onClick={ searchRestaurant }
+          />
         ))
       }
     </CarouselContainer>

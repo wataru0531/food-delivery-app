@@ -19,7 +19,7 @@ export default function CarouselContainer({
   slideToShow, // 幅をカード
 }: CarouselContainerProps){
   // console.log(children); // RestaurantCardの配列 (5) [{$$typeof: Symbol(react.transitional.element),...}, (...), (...), (...), (...)]
-
+  
   return (
     <Carousel
       opts={{

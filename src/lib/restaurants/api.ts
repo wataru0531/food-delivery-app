@@ -56,7 +56,7 @@ export async function fetchRamenRestaurants(){
     console.error(errorData);
     return { error: `NearbySearchリクエスト失敗 : ${response.status}` }
   }
-
+  
   const data: GooglePlacesSearchApiResponse = await response.json(); // JSオブジェクトに変換
   // console.log(data); // {places: Array(10)}、
                     //  0: {
