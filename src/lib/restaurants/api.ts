@@ -180,3 +180,64 @@ export async function fetchRestaurants(){
 
   return { data: ramenRestaurants };
 }
+
+
+// ✅ カテゴリ検索
+export async function fetchCategoryRestaurants(categoryType: string){
+  const url = "https://places.googleapis.com/v1/places:searchNearby";
+  const apiKey = process.env.GOOGLE_API_KEY;
+
+  const header = {
+    "Content-Type": "application/json",
+    "X-Goog-Api-Key": apiKey!,
+    "X-Goog-FieldMask": "places.id,places.displayName,places.primaryType,places.photos" 
+  }
+
+  const requestBody = {
+    includedPrimaryTypes: [categoryType], // 👉 ここで欲しいカテゴリーのタイプを指定
+    maxResultCount: 10, 
+    locationRestriction: { 
+      circle: {
+        center: {
+          latitude: 34.9260799,
+          longitude: 135.708068
+        }, 
+        radius: 1000.0,
+      },
+    },
+    languageCode: "ja",
+    rankPreference: "DISTANCE" 
+  }
+
+  const response = await fetch(url, {
+    method: "POST",
+    body: JSON.stringify(requestBody), // 実際の説明
+    headers: header, // 通信のmeta情報(通信の説明)
+    
+    // cache: "force-cache", // デフォルト。可能ならキャッシュを使う。静的データ向き
+                             // 一回データを取ったら使い回す 
+    // cache: "no-store", // キャッシュを使わない
+                          // 毎回必ず最新データを取得
+                          // 完全にキャッシュしない
+                          // 動的データ向き（ログイン、検索、ランキングなど）
+    next: { revalidate: 86400 } // 24時間でキャッシュ。24時間後にキャッシュを再取得
+  });
+
+  if(!response.ok) {
+    const errorData = await response.json();
+    console.error(errorData);
+    return { error: `NearbySearchリクエスト失敗 : ${response.status}` }
+  }
+  
+  const data: GooglePlacesSearchApiResponse = await response.json();
+
+  if(!data.places){
+    return { data: [] };
+  }
+
+  const categoryPlaces = data.places;
+
+  const categoryRestaurants = await transformPlaceResult(categoryPlaces); // 取得したデータを扱いやすいように整形
+
+  return { data: categoryRestaurants };
+}

@@ -17,9 +17,15 @@ export type CategoryType = {
 }
 
 export function Categories(){
+  // ✅ useSearchParams ... 今のURLのクエリパラメータを取得するフック
+  //                        ここでは後からのURLのクエリパラメータを読み込むためのオブジェクト
+  //                        を準備している。
   const searchParams = useSearchParams();
-  // console.log(searchParams); // ReadonlyURLSearchParams {size: 0}
+  // console.log(searchParams); // ReadonlyURLSearchParams {size: 0}。👉 読み取り専用
   const router = useRouter();
+
+  const currentCategory = searchParams.get("category"); // 👉 現在のクエリパラメータを取得
+  // console.log(currentCategory); // sushi_restaurant もしくは、null
 
   const categories: CategoryType[] = [
     {
@@ -86,23 +92,28 @@ export function Categories(){
   //   imageUrl: "/images/categories/ファーストフード.png",
   // },
 
-  // ✅ カテゴリーをクリックした時の処理
-  //    → typeをクエリパラメータに渡す
-  const searchRestaurant = (_category: string) => {
-    // console.log(_category); // fast_food_restaurant, japanese_restaurant
+  // ✅ カテゴリーをクリックした時の処理 → typeをクエリパラメータに渡す
+  const searchRestaurant = (category: string) => {
+    // console.log(category); // fast_food_restaurant, japanese_restaurant
 
-    // クエリパラメータを設定しておく → 後から実際のurlに反映する
+    // ✅ searchParamsをコピーして、新しいURLSearchParamsを作る
     const params = new URLSearchParams(searchParams);
-    params.set("category", _category); // 👉 クエリパラメータを追加。urlには表示されない
+    // console.log(params); // URLSearchParams {size: 0} 👉 変更可能
 
-    // console.log(params); // URLSearchParams {size: 1}
+    // ✅ 同じカテゴリーをクリックすると、ホームに戻る
+    if(currentCategory === category) {
+      router.replace("/");
+    } else {
+      params.set("category", category); // 👉 クエリパラメータを追加。urlには表示されない
+
+      // replace → 今のurlから履歴を置き換える。... ブラウザバックで元のurlに戻れない
+      //           ここでは履歴を増やさないようにしている？
+      // push → 新しい履歴を追加してページ遷移させる。... ブラウザバックが可能
+      router.replace(`/search?${params.toString()}`); 
+      // → http://localhost:3000/search?category=fast_food_restaurant
+    }
+
     
-    // replace → 今のurlから履歴を置き換える。... ブラウザバックで元のurlに戻れない
-    //           ここでは履歴を増やさないようにしている？
-    // push → 新しい履歴を追加してページ遷移させる。... ブラウザバックが可能
-    router.replace(`/search?${params.toString()}`); 
-    // → http://localhost:3000/search?category=fast_food_restaurant
-  
   }
 
   return(
@@ -113,6 +124,7 @@ export function Categories(){
             key={category.categoryName} 
             category={ category }
             onClick={ searchRestaurant }
+            select={ category.type === currentCategory }
           />
         ))
       }
