@@ -112,8 +112,6 @@ export function Categories(){
       router.replace(`/search?${params.toString()}`); 
       // → http://localhost:3000/search?category=fast_food_restaurant
     }
-
-    
   }
 
   return(

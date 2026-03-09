@@ -1,8 +1,12 @@
 
+// Header.tsx
+
+
 import Link from "next/link";
 
 import { JSX } from "react";
 import MenuSheet from "./MenuSheet";
+import PlaceSearchBar from "./PlaceSearchBar";
 
 
 export default function Header():JSX.Element {
@@ -12,12 +16,16 @@ export default function Header():JSX.Element {
         <MenuSheet />
 
         <div className="font-bold">
-          <Link href={"/"}>delivery APP</Link>
+          <Link href={"/"}>Delivery APP</Link>
         </div>
         <div>住所を選択</div>
-        <div className="flex-1 bg-yellow-300">検索バー</div>
-        <div>カート</div>
 
+        {/* 検索バー */}
+        <div className="flex-1">
+          <PlaceSearchBar />
+        </div>
+
+        <div>カート</div>
       </div>
     </header>
   )

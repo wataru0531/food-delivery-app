@@ -37,7 +37,7 @@ export function Category({
       </div>
       <div className="mt-2 text-center">
         {/* 
-          truncate ...  text-overflow: ellipsis; → はみ出した時に、... で終わる
+          truncate ...  text-overflow: ellipsis; → はみ出した時に、「 ... 」 で終わる
                         white-space: nowrap;
                         overflow: hidden;
         */}
