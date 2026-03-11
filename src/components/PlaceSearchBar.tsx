@@ -26,15 +26,18 @@ import {
 import { useDebouncedCallback } from "use-debounce";
 import { v4 as uuidv4 } from "uuid";
 
+
 export default function PlaceSearchBar(){
   const [ open, setOpen ] = useState(false);
   const [ inputText, setInputText ] = useState("");
   // ✅ サジェスチョンをAPIで取得する時に使うトークンを作り管理
+  //    → Googl側に渡すためのセッションID
   const [ sessionToken, setSessionToken ] = useState(uuidv4());
   // console.log(sessionToken);
 
   // ✅ 表示されたサジェスチョンを取得するAPI → サーバーサイドでAPIを叩く
   //    セッショントークンも渡す → サジェスチョンを取得するために使う
+  // ⭐️ useDebounceCallback → API呼び出しの回数を減らす。
   const fetchSuggestions = useDebouncedCallback(async (_inputText: string) => {
     // try catch文でエラーを捕まえると、error.tsxではハンドリングされない。
     // また、error.tsxは、useEffectのエラーは基本的に捕まえない
@@ -65,9 +68,7 @@ export default function PlaceSearchBar(){
   const handleBlur = () => setOpen(false); // 別の場所をカーソルを置いた時
   const handleFocus = () => { // フォーカスした時
     // テキストがある場合のみサジェスチョンを開ける。
-    if(inputText){
-      setOpen(true);
-    }
+    if(inputText) setOpen(true);
   };
 
   return (
