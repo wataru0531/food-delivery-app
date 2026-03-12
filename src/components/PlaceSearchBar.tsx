@@ -19,12 +19,15 @@ import {
   Calculator,
   Calendar,
   CreditCard,
+  MapPin,
+  Search,
   Settings,
   Smile,
   User,
 } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import { v4 as uuidv4 } from "uuid";
+import { RestaurantSuggestionType } from "@/types";
 
 
 export default function PlaceSearchBar(){
@@ -34,6 +37,7 @@ export default function PlaceSearchBar(){
   //    → Googl側に渡すためのセッションID
   const [ sessionToken, setSessionToken ] = useState(uuidv4());
   // console.log(sessionToken);
+  const [ suggestions, setSuggestions ] = useState<RestaurantSuggestionType[]>([]);
 
   // ✅ 表示されたサジェスチョンを取得するAPI → サーバーサイドでAPIを叩く
   //    セッショントークンも渡す → サジェスチョンを取得するために使う
@@ -44,9 +48,22 @@ export default function PlaceSearchBar(){
     // → useEffectはレンダリング後に実行されるため
     //   ⭐️ 他のAPIはレンダリングプロセス中に実行されるので、error.tsxでハンドリングさせている
     //   onClickなども同じで、try catch文で処理する
+
+    // デバウンスにより遅れてコールバックが実行されるので、文字が空であるならステートを空に
+    if(!inputText.trim()) {
+      setSuggestions([]);
+
+      return; // 関数を終わらす
+    };
+
     try {
       // console.log("fetchSuggestions!!");
       const response = await fetch(`/api/restaurant/autocomplete?input=${_inputText}&sessionToken=${sessionToken}`);
+      // console.log(response);
+      const data: RestaurantSuggestionType[] = await response.json();
+      // console.log(data);
+      // (5) [{type: 'queryPrediction', placeName: 'Pizza Hut'},  {type: 'placePrediction', placeId: 'ChIJqeXxChIFAWARsjoxj1aiThA', placeName: 'KFC'}, {…}, {…}, {…}]
+      setSuggestions(data);
 
     } catch(e) {
 
@@ -55,8 +72,10 @@ export default function PlaceSearchBar(){
 
   // ✅ inputTextの内容が変更するにつれ発火
   useEffect(() => {
-    if(!inputText.trim()){ // 空白は切り取り
+    if(!inputText.trim()){ // 検索テキストがない場合。空白は切り取り
       setOpen(false);
+      setSuggestions([]); // 👉 検索結果のステートを空に
+      // console.log(suggestions);
 
       return; // 文字を消し終えるとここで関数を終わらす
     }
@@ -92,11 +111,30 @@ export default function PlaceSearchBar(){
           <div className="relative">
             <CommandList className="absolute bg-background w-full shadow-md rounded-lg">
               <CommandEmpty>No results found.</CommandEmpty>
-              <CommandItem>Calender</CommandItem>
-              <CommandItem>Search Emoji</CommandItem>
-              <CommandItem>Calculator</CommandItem>
+              {/* サジェスションを展開していく */}
+              {
+                suggestions.map((suggestion) => {
+                  // console.log(suggestion);
+
+                  // 検索キーワードはplaceIdを持っていないのでキーは条件分岐でつくる
+                  const key = suggestion.placeId ?? `${suggestion.type}-${suggestion.placeName}`;
+
+                  return(
+                    <CommandItem 
+                      key={ key } 
+                      value={ suggestion.placeName }
+                      className="p-5"
+                    >
+                      {/* 実際の店舗はMapPinで、キーワードは虫眼鏡で表す */}
+                      { suggestion.type === "queryPrediction" ? <Search /> : <MapPin /> }
+                      <p>{ suggestion.placeName }</p>
+                    </CommandItem>
+                  )
+                })
+              }
             </CommandList>
           </div>
+          
         )
       }
       
