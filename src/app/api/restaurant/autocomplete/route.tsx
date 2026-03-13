@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       const errorData = await response.json();
       console.error(errorData);
 
-      return { error: `AutoCompleteリクエスト失敗: ${response.status}` };
+      return NextResponse.json({ error: `AutoCompleteリクエスト失敗: ${ response.status }`}, {  status: 500 });
     }
 
     const data: GooglePlacesAutoCompleteResponseType = await response.json();

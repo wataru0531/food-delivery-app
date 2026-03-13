@@ -54,10 +54,10 @@ export type PlaceAutoCompleteResult = {
 
 // ✅ 店舗のデータ、検索キーワードをmapとfilterで項目を絞った型。最終的に使う型
 export type RestaurantSuggestionType = {
-      type: string;
-      placeId?: string; // 検索キーワード(queryPrediction)の場合は存在しないので
-      placeName: string;
-    }
+  type: string;
+  placeId?: string; // 検索キーワード(queryPrediction)の場合は存在しないので
+  placeName: string;
+}
 
 // 検索キーワードの型
 
