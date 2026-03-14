@@ -241,3 +241,59 @@ export async function fetchCategoryRestaurants(categoryType: string){
 
   return { data: categoryRestaurants };
 }
+
+
+// ✅ キーワード検索
+export async function fetchRestaurantsByKeyword(query: string){
+  const url = "https://places.googleapis.com/v1/places:searchText";
+  const apiKey = process.env.GOOGLE_API_KEY;
+
+  const header = {
+    "Content-Type": "application/json",
+    "X-Goog-Api-Key": apiKey!,
+    "X-Goog-FieldMask": "places.id,places.displayName,places.primaryType,places.photos" 
+  }
+
+  const requestBody = {
+    textQuery: query, // 👉 ここで欲しいカテゴリーのタイプを指定
+    // maxResultCount: 10, // 非推奨 
+    pageSize: 10, // デフォルトは20件
+    locationBias: { // 指定したエリア外も取得する
+      circle: {
+        center: {
+          latitude: 34.9260799,
+          longitude: 135.708068
+        }, 
+        radius: 1000.0,
+      },
+    },
+    languageCode: "ja",
+    rankPreference: "DISTANCE" 
+  }
+
+  const response = await fetch(url, {
+    method: "POST",
+    body: JSON.stringify(requestBody), // 実際の説明
+    headers: header, // 通信のmeta情報(通信の説明)
+
+    next: { revalidate: 86400 } // 24時間でキャッシュ。24時間後にキャッシュを再取得
+  });
+
+  if(!response.ok) {
+    const errorData = await response.json();
+    console.error(errorData);
+    return { error: `TextSearchリクエスト失敗 : ${response.status}` }
+  }
+  
+  const data: GooglePlacesSearchApiResponse = await response.json();
+
+  if(!data.places){
+    return { data: [] };
+  }
+
+  const textSearchPlaces = data.places;
+
+  const restaurants = await transformPlaceResult(textSearchPlaces); // 取得したデータを扱いやすいように整形
+
+  return { data: restaurants };
+}

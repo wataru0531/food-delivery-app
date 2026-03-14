@@ -105,6 +105,7 @@ export function Categories(){
       router.replace("/");
     } else {
       params.set("category", category); // 👉 クエリパラメータを追加。urlには表示されない
+      // console.log(params); // URLSearchParams {size: 1}
 
       // replace → 今のurlから履歴を置き換える。... ブラウザバックで元のurlに戻れない
       //           ここでは履歴を増やさないようにしている？
