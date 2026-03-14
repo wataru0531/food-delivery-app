@@ -4,6 +4,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Command,
   CommandEmpty,
@@ -43,6 +44,7 @@ export default function PlaceSearchBar(){
   const [ isLoading, setIsLoading ] = useState(false);
   const [ errorMessage, setErrorMessage ] = useState<string | null>(null);
   const clickedOnItem = useRef(false); // 👉 useRefで定義した変数は再レンダリングしても保持される。
+  const router = useRouter();
 
   // ✅ 表示されたサジェスチョンを取得するAPI → サーバーサイドでAPIを叩く
   //    セッショントークンも渡す → サジェスチョンを取得するために使う
@@ -69,7 +71,7 @@ export default function PlaceSearchBar(){
       // console.log(response);
 
       // dataが取れてきていない時の処理
-      // 👉 エラーの400番台ya500番台が返ってきた時にここが実行される
+      // 👉 エラーの400番台や500番台が返ってきた時にここが実行される
       if(!response.ok) { 
         const errorData = await response.json();
         setErrorMessage(errorData.error);
@@ -107,7 +109,7 @@ export default function PlaceSearchBar(){
   }, [ inputText ]);
 
   // 別の場所をカーソルを置いた時にはサジェスチョンは閉じる
-  // ✅ ２回連続でonBlurを発火させることはできない
+  // ✅ 一度、対象DOMからカーソルが外れたら、他のDOMをクリックしてもonBlurは発火しない
   const handleBlur = () => {
     if(clickedOnItem.current) { // CommandItemをクリックした時は閉じない。
       clickedOnItem.current = false; // 閉じれなくなるので元に戻す
@@ -123,15 +125,40 @@ export default function PlaceSearchBar(){
   };
 
   // ✅　サジェスチョンをクリックした時の処理
+  // → キーワードで検索したページ、検出できた店舗かの2つの詳細ページに遷移
   const handleSelectSuggestion = (suggestion: RestaurantSuggestionType) => {
-    console.log(suggestion); // {type: 'placePrediction', placeId: 'ChIJby1ukkIEAWARIHrJMqfIwIw', placeName: '済公亭'}
-    
+    // console.log(suggestion); // 店舗 → {type: 'placePrediction', placeId: 'ChIJby1ukkIEAWARIHrJMqfIwIw', placeName: '済公亭'}
+                             // キーワード → {type: 'queryPrediction', placeName: 'restaurants'}
+
+    if(suggestion.type === "placePrediction") {
+      // ✅ 店舗を選択した場合 → idとセッショントークンを渡す。
+      //                      店舗詳細ページに遷移
+      router.push(`/restaurant/${suggestion.placeId}?sessionToken=${sessionToken}`);
+    } else {
+      // ✅ キーワード検索のサジェスチョンを選択した時
+      //    → 検索結果ページに遷移
+      router.push(`/search?restaurant=${suggestion.placeName}`);
+    }
+
+    setOpen(false);
   } 
+
+  // ✅ 打ち込んだキーワードだけで検索したい時
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if(!inputText.trim()) return;
+
+    if(e.key === "Enter") {
+      router.push(`/search?restaurant=${inputText}`);
+    }
+
+    setOpen(false);
+  }
 
   return (
     <Command 
       className="max-w-sm rounded-lg border overflow-visible bg-muted"
       shouldFilter={ false } // フィルタリング機能をOFF
+      onKeyDown={ handleKeyDown } // 打ち込んだキーワードだけで検索したい時
     >
       <CommandInput 
         placeholder="Type a command or search..." 
@@ -168,7 +195,7 @@ export default function PlaceSearchBar(){
                   }
                 </div>
               </CommandEmpty>
-              {/* サジェスションを展開していく */}
+              {/* サジェスション */}
               {
                 suggestions.map((suggestion) => {
                   // console.log(suggestion);

@@ -2,12 +2,20 @@
 // (private)/page.tsx
 // → ログイン後の画面を入れていく
 
+import type { Metadata } from "next";
+
 import CarouselContainer from "@/components/CarouselContainer";
 import { Categories } from "@/components/Categories";
 import RestaurantCard from "@/components/RestaurantCard";
 import { RestaurantList } from "@/components/RestaurantList";
 import Section from "@/components/Section";
 import { fetchRamenRestaurants, fetchRestaurants } from "@/lib/restaurants/api";
+
+// layoutと同じなら書かなくて良い。継承される。
+export const metadata: Metadata = {
+  title: "Food Delivery Service",
+  description: "Find nearby restaurants and ramen shops quickly. Discover great food around you with our food delivery service.",
+}
 
 
 export default async function Home() {
