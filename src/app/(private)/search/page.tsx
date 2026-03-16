@@ -1,6 +1,8 @@
 
-// ✅　カテゴリ検索(ヘッダー上部に並ぶカテゴリークリック時)のページ、キーワード検索のページ
+// ✅　カテゴリ検索(ヘッダー上部に並ぶカテゴリークリック時)のページ、キーワード検索のページ を兼任
 // (private)/search/page.tsx
+
+import { redirect } from "next/navigation";
 
 import { Categories } from "@/components/Categories";
 import { RestaurantList } from "@/components/RestaurantList";
@@ -41,13 +43,24 @@ export default async function SearchPage({ searchParams }: SearchPageProps){
     // console.log("restaurant in!!"); // 👉 検索キーワードをクリック
     const { data: restaurants, error: fetchError } = await fetchRestaurantsByKeyword(restaurant);
     // console.log(restaurants); // (10) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, _debugInfo: Array(1)]
-
-    // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
-    // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
-    // ⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから⭐️ここから
-
-
-
+    
+    if(!restaurants) {
+      content = <p className="text-destructive">{ fetchError }</p>
+    } else if(restaurants.length > 0) {
+      content = (
+        <>
+          <div>{ restaurant } の検索結果 { restaurants.length } 件の結果</div>
+          <RestaurantList restaurants={ restaurants } />
+        </>
+      );
+    } else {
+      content = (
+        <p>検索キーワード「<strong>{ restaurant }</strong>」に一致するレストランが見つかりません。</p>
+      )
+    }
+  } else {
+    // http://localhost:3000/search など、クエリパラメータの設定がない場合
+    redirect("/");
   }
 
   return (

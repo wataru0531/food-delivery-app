@@ -1,5 +1,6 @@
 
-// ✅ サジェスチョンを取得するためのAPI
+// ✅ 住所を選択からのルートハンドラーのAPI
+
 
 import { type NextRequest, NextResponse  } from "next/server";
 import { GooglePlacesAutoCompleteResponseType, RestaurantSuggestionType } from "@/types";
@@ -21,7 +22,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "セッショントークンは必須です。" }, { status: 400 });
   }
 
-  // ⭐️ APIを叩く
   // Route Handlerでは、try/catch文を使う
   try {
     const url = "https://places.googleapis.com/v1/places:autocomplete";
@@ -36,8 +36,8 @@ export async function GET(request: NextRequest) {
     const requestBody = {
       input: input, // 👉 ユーザーの入力文字
       sessionToken: sessionToken, // 👉 セッショントークン
-      includedPrimaryTypes: ["restaurant"],
-      includeQueryPredictions: true, // キーワードのサジェスチョンのデータも含める
+      // includedPrimaryTypes: ["restaurant"],
+      // includeQueryPredictions: true, // キーワードのサジェスチョンのデータも含める
                                      // →  サジェスチョン ... ユーザーが入力途中のときに表示される候補のこと
                                      // Google Places APIは2つの候補を返す
                                      // ① placePrediction（お店・場所の候補）
@@ -75,8 +75,7 @@ export async function GET(request: NextRequest) {
 
     const data: GooglePlacesAutoCompleteResponseType = await response.json();
     // console.log(data); // { suggestions: [ { placePrediction: [Object] }, { placePrediction: [Object] }, { placePrediction: [Object] }, ...] }, ... 
-    // console.log(JSON.stringify(data, null, 2)); 
-    // [{ placePrediction: { "place": "places/ChIJZZPMQQDfAGARxEZtPATdWew", "placeId": "ChIJZZPMQQDfAGARxEZtPATdWew",  "text": { "日本、大阪府東大阪市七軒家１２−２７ RAMEN JUNKEYZ", ...} },... }
+    console.log(JSON.stringify(data, null, 2)); 
 
     const suggestions = data.suggestions ?? [];
 
@@ -112,6 +111,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "予期せぬエラーが発生しました。" });
   }
 }
+
+
+
+
+
 
 
 

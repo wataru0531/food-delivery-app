@@ -7,6 +7,7 @@ import Link from "next/link";
 import { JSX } from "react";
 import MenuSheet from "./MenuSheet";
 import PlaceSearchBar from "./PlaceSearchBar";
+import AddressModal from "./AddressModal";
 
 
 export default function Header():JSX.Element {
@@ -18,7 +19,8 @@ export default function Header():JSX.Element {
         <div className="font-bold">
           <Link href={"/"}>Delivery APP</Link>
         </div>
-        <div>住所を選択</div>
+
+        <AddressModal />
 
         {/* 検索バー */}
         <div className="flex-1">

@@ -243,7 +243,7 @@ export async function fetchCategoryRestaurants(categoryType: string){
 }
 
 
-// ✅ キーワード検索
+// ✅ キーワード検索でのAPI
 export async function fetchRestaurantsByKeyword(query: string){
   const url = "https://places.googleapis.com/v1/places:searchText";
   const apiKey = process.env.GOOGLE_API_KEY;

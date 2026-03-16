@@ -8,25 +8,16 @@ import { useRouter } from "next/navigation";
 import {
   Command,
   CommandEmpty,
-  CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
-  CommandShortcut,
 } from "@/components/ui/command";
 
 import {
   AlertCircle,
-  Calculator,
-  Calendar,
-  CreditCard,
   LoaderCircle,
   MapPin,
   Search,
-  Settings,
-  Smile,
-  User,
 } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import { v4 as uuidv4 } from "uuid";
@@ -134,31 +125,35 @@ export default function PlaceSearchBar(){
       // ✅ 店舗を選択した場合 → idとセッショントークンを渡す。
       //                      店舗詳細ページに遷移
       router.push(`/restaurant/${suggestion.placeId}?sessionToken=${sessionToken}`);
+    
+      setSessionToken(uuidv4()); // 次の検索のために新しいトークンを作る必要がある
+                                // →  更新しないとGoogleから見ると全て同じ検索行動に見えるので検索最適化が行われない
     } else {
       // ✅ キーワード検索のサジェスチョンを選択した時
       //    → 検索結果ページに遷移
       router.push(`/search?restaurant=${suggestion.placeName}`);
+      // 👉 キーワード検索の場合は、検索の途中なのでセッションの更新はしない
     }
 
     setOpen(false);
   } 
 
-  // ✅ 打ち込んだキーワードだけで検索したい時
+  // ✅ キーワード検索
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if(!inputText.trim()) return;
 
     if(e.key === "Enter") {
       router.push(`/search?restaurant=${inputText}`);
+      setOpen(false);
     }
-
-    setOpen(false);
+    
   }
 
   return (
     <Command 
       className="max-w-sm rounded-lg border overflow-visible bg-muted"
       shouldFilter={ false } // フィルタリング機能をOFF
-      onKeyDown={ handleKeyDown } // 打ち込んだキーワードだけで検索したい時
+      onKeyDown={ handleKeyDown } // キーワード検索
     >
       <CommandInput 
         placeholder="Type a command or search..." 
@@ -195,7 +190,8 @@ export default function PlaceSearchBar(){
                   }
                 </div>
               </CommandEmpty>
-              {/* サジェスション */}
+
+              {/* サジェスションを表示 */}
               {
                 suggestions.map((suggestion) => {
                   // console.log(suggestion);
@@ -219,10 +215,8 @@ export default function PlaceSearchBar(){
               }
             </CommandList>
           </div>
-          
         )
       }
-      
     </Command>
   )
 }
