@@ -41,6 +41,9 @@ export type PlaceAutoCompleteResult = {
     structuredFormat?: {
       mainText?: {
         text?: string
+      };
+      secondaryText?: {
+        text?:string
       }
     }
   }
@@ -59,77 +62,11 @@ export type RestaurantSuggestionType = {
   placeName: string;
 }
 
-// 検索キーワードの型
 
+// ✅
+export type AddressSuggestionType = {
+  placeId: string,
+  placeName: string,
+  address_text: string
+}
 
-// {
-//   "suggestions": [
-//     {
-//       "queryPrediction": {
-//         "text": {
-//           "text": "ピザハット",
-//           "matches": [
-//             {
-//               "endOffset": 2
-//             }
-//           ]
-//         },
-//         "structuredFormat": {
-//           "mainText": {
-//             "text": "ピザハット",
-//             "matches": [
-//               {
-//                 "endOffset": 2
-//               }
-//             ]
-//           }
-//         }
-//       }
-//     },
-//     {
-//       "placePrediction": {
-//         "place": "places/ChIJ4x6WOJYFAWAR0XDZfNgDIuE",
-//         "placeId": "ChIJ4x6WOJYFAWAR0XDZfNgDIuE",
-//         "text": {
-//           "text": "京都府長岡京市開田３丁目１−１９ ピザ＆ワイン テラ",
-//           "matches": [
-//             {
-//               "startOffset": 12,
-//               "endOffset": 16
-//             },
-//             {
-//               "startOffset": 17,
-//               "endOffset": 19
-//             }
-//           ]
-//         },
-//         "structuredFormat": {
-//           "mainText": {
-//             "text": "ピザ＆ワイン テラ",
-//             "matches": [
-//               {
-//                 "endOffset": 2
-//               }
-//             ]
-//           },
-//           "secondaryText": {
-//             "text": "京都府長岡京市開田３丁目１−１９",
-//             "matches": [
-//               {
-//                 "startOffset": 12,
-//                 "endOffset": 16
-//               }
-//             ]
-//           }
-//         },
-//         "types": [
-//           "pizza_restaurant",
-//           "restaurant",
-//           "establishment",
-//           "point_of_interest",
-//           "food"
-//         ]
-//       }
-//     },
-//     ...
-// }

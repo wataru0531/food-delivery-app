@@ -68,7 +68,7 @@ export default function AddressModal(){
       }
 
       const data = await response.json();
-      // console.log(data);
+      console.log(data);
 
       setSuggestions(data);
 

@@ -3,7 +3,7 @@
 
 
 import { type NextRequest, NextResponse  } from "next/server";
-import { GooglePlacesAutoCompleteResponseType, RestaurantSuggestionType } from "@/types";
+import { AddressSuggestionType, GooglePlacesAutoCompleteResponseType, RestaurantSuggestionType } from "@/types";
 
 
 export async function GET(request: NextRequest) {
@@ -78,31 +78,23 @@ export async function GET(request: NextRequest) {
     console.log(JSON.stringify(data, null, 2)); 
 
     const suggestions = data.suggestions ?? [];
+    // console.log(suggestions);
 
-    // ✅　データを整形して使いやすいようにする
+    // ✅　データを整形
     const results = suggestions.map(suggestion => {
-      // 店舗のデータ
-      // → 店舗のID、名前が含まれている時だけ、データを返す
-      if(suggestion.placePrediction 
-          && suggestion.placePrediction.placeId
-          && suggestion.placePrediction.structuredFormat?.mainText?.text
-      ) {
-        return {
-          type: "placePrediction",
-          placeId: suggestion.placePrediction.placeId,
-          placeName: suggestion.placePrediction.structuredFormat?.mainText?.text,
-        }
-      } else if(suggestion.queryPrediction && suggestion.queryPrediction.text?.text) { 
-        // 検索キーワードのデータ
-        return {
-          type: "queryPrediction",
-          placeName: suggestion.queryPrediction.text?.text,
-        }
+      // console.log(suggestion);
+      return {
+        placeId: suggestion.placePrediction?.placeId,
+        placeName: suggestion.placePrediction?.structuredFormat?.mainText?.text,
+        address_text: suggestion.placePrediction?.structuredFormat?.secondaryText?.text, // ⭐️ 住所を追加
       }
-    }).filter((suggestion): suggestion is RestaurantSuggestionType => suggestion !== undefined); // undefinedは除外
-    // ✅ 型ガード
-    // ここでは、suggestionがundefinedではない時に、RestaurantSuggestionType の型になるということ
-    // この条件を通ったものは、RestaurantSuggestionType だと保証するという意味。
+    })
+    // .filter((suggestion): suggestion is AddressSuggestionType => suggestion.placeId !== undefined && suggestion.placeName !== undefined && suggestion.address_text);
+    .filter((suggestion): suggestion is AddressSuggestionType => !!suggestion.placeId && !!suggestion.placeName && !!suggestion.address_text);
+    // → 型ガード。placeId、placeName、address_textが必ずある状態で返す
+    //           undefinedの可能性があるが、trueなら、TypeScriptにsuggestionはその型だと伝える
+
+    console.log(results); //[{ placeId: 'ChIJdfnUY5IPAWARH0gKwi4GYAM', placeName: '鳥せい本店', address_text: '京都府京都市伏見区上油掛町１８６' }, ... ]
 
     return NextResponse.json(results);
 
