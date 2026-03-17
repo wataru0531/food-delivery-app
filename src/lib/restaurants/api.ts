@@ -297,3 +297,19 @@ export async function fetchRestaurantsByKeyword(query: string){
 
   return { data: restaurants };
 }
+
+
+// ✅ 緯度、経度のデータを取得。
+//    サーバーアクションで実行。addressAction.tsx
+export async function getPlaceDetails(placeId: string, fields: string[], sessionToken: string) {
+  // console.log(placeId); // ChIJ8d6LEEoEAWARx_vjxLWiis4
+
+  let url: string;
+
+  // Places Detail APIを呼び出した時に料金の最適化をする場合としない場合とであるので条件分岐
+  if(sessionToken) {
+    url = `https://places.googleapis.com/v1/places/${placeId}`;
+  } 
+
+
+}

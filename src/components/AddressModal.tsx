@@ -6,30 +6,20 @@
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-
-import {
-  Command,
-  CommandEmpty,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { useDebouncedCallback } from "use-debounce";
+import { AddressSuggestionType } from "@/types";
+import { AlertCircle, LoaderCircle, MapPin } from "lucide-react";
+import { selectSuggestionAction } from "@/app/(private)/actions/addressActions";
 
 
 export default function AddressModal(){
   const [ inputText, setInputText ] = useState("");
   const [ sessionToken, setSessionToken ] = useState(uuidv4());
   // console.log(sessionToken);
-  const [ suggestions, setSuggestions ] = useState([]);
+
+  const [ suggestions, setSuggestions ] = useState<AddressSuggestionType[]>([]);
   const [ isLoading, setIsLoading ] = useState(false);
   const [ errorMessage, setErrorMessage ] = useState<string | null>(null);
 
@@ -67,8 +57,8 @@ export default function AddressModal(){
         return; // 処理中断
       }
 
-      const data = await response.json();
-      console.log(data);
+      const data: AddressSuggestionType[] = await response.json();
+      // console.log(data); // (5) [{placeId: 'ChIJFerB-HoFAWAR5uaYr9yg7Ns', placeName: 'びっくりドンキー 伏見店', address_text: '京都府京都市伏見区下鳥羽広長町１５９'}, {…}, {…}, {…}, {…}]
 
       setSuggestions(data);
 
@@ -79,7 +69,7 @@ export default function AddressModal(){
       setIsLoading(false);
     }
 
-  }, 500); // 0.5秒待ってから中のコールバックが発火suru
+  }, 500); // 0.5秒待ってから中のコールバックが発火
   
   // ✅ inputTextの内容が変更するにつれ発火
   useEffect(() => {
@@ -95,6 +85,25 @@ export default function AddressModal(){
 
     fetchSuggestions(inputText);
   }, [ inputText ]);
+
+  // ✅ サジェスチョンを選択した時の処理
+  const handleSelectSuggestion = async (suggestion: AddressSuggestionType) => {
+    // console.log(suggestion); // {placeId: 'ChIJ222NUgAJAWARiFvAjMyIalo', placeName: 'RAMEN KATAMUKI（ラーメン カタムキ）Chicken & Vegan noodles shop', address_text: '京都府京都市下京区稲荷町４４８'}
+    
+    // ✅ サーバーアクション
+    // ⭐️ クライアントコンポーネントではerror.tsxでは捕まえられない。
+    // → error.tsxはレンダリング中に発生したエラーしか監視していないため。
+    //   クライアント、サーバーのどちらでも動くが、React内部でのレンダリング中のエラーのみ捕まえる
+    try {
+      await selectSuggestionAction(suggestion, sessionToken);
+
+      setSessionToken(uuidv4()); // トークンを更新。使いまわすことができないため。
+
+    } catch(e) {
+      alert("予期せぬエラーが発生しました。");
+    }
+  
+  }
 
   return(
     <Dialog>
@@ -116,12 +125,44 @@ export default function AddressModal(){
           </div>
 
           <CommandList>
-            { 
+            {
               inputText ? (
                 // サジェスチョン表示
                 <>
-                  <CommandEmpty>No results found.</CommandEmpty>
-                  <div>サジェスチョン表示</div>
+                  {/* CommandItemが1つもない場合に内部で自動に表示されるUI */}
+                  <CommandEmpty>
+                    <div className="flex items-center justify-center">
+                      {
+                        isLoading ? ( <LoaderCircle className="animate-spin" /> ) 
+                                  : errorMessage ? (
+                                    <>
+                                      <AlertCircle  />
+                                      { errorMessage }
+                                    </>
+                                  ) : 
+                                  (
+                                    <p>住所が見つかりません。</p>
+                                  )
+                      }
+                    </div>
+                  </CommandEmpty>
+                  {
+                    suggestions.map(suggestion => {
+                      return (
+                        <CommandItem 
+                          key={ suggestion.placeId }
+                          className="p-5 items-start"
+                          onSelect={ () => handleSelectSuggestion(suggestion) }
+                        >
+                          <MapPin />
+                          <div>
+                            <p className="font-bold ">{ suggestion.placeName }</p>
+                            <p className="text-muted-foreground">{ suggestion.address_text }</p>
+                          </div>
+                        </CommandItem>
+                      )
+                    })
+                  }
                 </>
               ) : (
                 // 保存済みの住所を表示
@@ -132,18 +173,11 @@ export default function AddressModal(){
                   <CommandItem className="p-5">Search Emoji</CommandItem>
                   <CommandItem className="p-5">Calculator</CommandItem>
                 </>
-                
               )
             }
-            
-            
           </CommandList>
         </Command>
-
       </DialogContent>
     </Dialog>
   )
 }
-
-
-

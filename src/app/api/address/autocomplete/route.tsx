@@ -1,5 +1,6 @@
 
-// ✅ 住所を選択からのルートハンドラーのAPI
+// ✅ モーダルで使うAPI
+// → 住所を選択
 
 
 import { type NextRequest, NextResponse  } from "next/server";
