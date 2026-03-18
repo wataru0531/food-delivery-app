@@ -68,7 +68,6 @@ export default function AddressModal(){
     } finally {
       setIsLoading(false);
     }
-
   }, 500); // 0.5秒待ってから中のコールバックが発火
   
   // ✅ inputTextの内容が変更するにつれ発火

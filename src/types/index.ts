@@ -70,3 +70,11 @@ export type AddressSuggestionType = {
   address_text: string
 }
 
+
+// ✅ Place Details API 緯度、経度の型
+export type GooglePlacesDetailsApiResponseType = {
+  location: {
+    latitude: number; // 緯 横
+    longitude: number; // 経度
+  }
+}

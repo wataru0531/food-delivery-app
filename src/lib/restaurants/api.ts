@@ -2,7 +2,7 @@
 // ✅ レストランに関するAPI 
 // → ⭐️ キャッシュがPOSTでは効かないので、app/api/places/route.ts に記述
 
-import { GooglePlacesSearchApiResponse } from "@/types";
+import { GooglePlacesDetailsApiResponseType, GooglePlacesSearchApiResponse } from "@/types";
 import { transformPlaceResult } from "./utils";
 
 
@@ -299,17 +299,56 @@ export async function fetchRestaurantsByKeyword(query: string){
 }
 
 
-// ✅ 緯度、経度のデータを取得。
+// ✅ 緯度、経度のデータなどの詳細データを取得。
 //    サーバーアクションで実行。addressAction.tsx
-export async function getPlaceDetails(placeId: string, fields: string[], sessionToken: string) {
+export async function getPlaceDetails(placeId: string, fields: string[], sessionToken?: string) {
   // console.log(placeId); // ChIJ8d6LEEoEAWARx_vjxLWiis4
+  // console.log(fields); // [ 'location' ]
 
-  let url: string;
+  const fieldsParam = fields.join(",");
+  // console.log(fieldsParam); // location
 
-  // Places Detail APIを呼び出した時に料金の最適化をする場合としない場合とであるので条件分岐
+  let url: string; // APIエンドポイント
+
+  // Places Detail APIを呼び出した時に、料金の最適化をする場合としない場合とであるので条件分岐
   if(sessionToken) {
-    url = `https://places.googleapis.com/v1/places/${placeId}`;
-  } 
+    url = `https://places.googleapis.com/v1/places/${placeId}?sessionToken=${sessionToken}&languageCode=ja`;
+    // → sessionToken、languageCodeなどはGoogle側で処理される。APIの仕様
+  } else {
+    // 料金を最適化できない場合はsessionTokenを含めないだけ
+    url = `https://places.googleapis.com/v1/places/${placeId}?languageCode=ja`;
+  }
 
+  const apiKey = process.env.GOOGLE_API_KEY;
 
+  const header = {
+    "Content-Type": "application/json",
+    "X-Goog-Api-Key": apiKey!,
+    "X-Goog-FieldMask": fieldsParam,
+  }
+
+  const response = await fetch(url, {
+    method: "GET",
+    // body: JSON.stringify(requestBody), // GETの時にはbodyの指定はできない
+    headers: header, // 通信のmeta情報(通信の説明)
+    next: { revalidate: 86400 } // 24時間でキャッシュ。24時間後にキャッシュを再取得
+  });
+
+  if(!response.ok) {
+    const errorData = await response.json();
+    console.error(errorData);
+    return { error: `PlaceDetailsリクエスト失敗 : ${response.status}` }
+  }
+  
+  const data: GooglePlacesDetailsApiResponseType = await response.json();
+  // console.log(data); // { location: { latitude: 34.6882322, longitude: 135.5892084 } }
+  
+  const results = {};
+
+  // locationが指定されてある場合 → API呼び出しで異なるので条件分岐
+  if(fields.includes("location") && data.location) {
+    results.location = data.location;
+  }
+
+  return { data: results }
 }
