@@ -2,7 +2,7 @@
 // ✅ レストランに関するAPI 
 // → ⭐️ キャッシュがPOSTでは効かないので、app/api/places/route.ts に記述
 
-import { GooglePlacesDetailsApiResponseType, GooglePlacesSearchApiResponse } from "@/types";
+import { GooglePlacesDetailsApiResponseType, GooglePlacesSearchApiResponse, PlaceDetailsAll } from "@/types";
 import { transformPlaceResult } from "./utils";
 
 
@@ -313,7 +313,7 @@ export async function getPlaceDetails(placeId: string, fields: string[], session
   // Places Detail APIを呼び出した時に、料金の最適化をする場合としない場合とであるので条件分岐
   if(sessionToken) {
     url = `https://places.googleapis.com/v1/places/${placeId}?sessionToken=${sessionToken}&languageCode=ja`;
-    // → sessionToken、languageCodeなどはGoogle側で処理される。APIの仕様
+    // → sessionToken、languageCodeなどは、Google側で処理される。APIの仕様
   } else {
     // 料金を最適化できない場合はsessionTokenを含めないだけ
     url = `https://places.googleapis.com/v1/places/${placeId}?languageCode=ja`;
@@ -333,6 +333,7 @@ export async function getPlaceDetails(placeId: string, fields: string[], session
     headers: header, // 通信のmeta情報(通信の説明)
     next: { revalidate: 86400 } // 24時間でキャッシュ。24時間後にキャッシュを再取得
   });
+  // console.log(response);
 
   if(!response.ok) {
     const errorData = await response.json();
@@ -340,15 +341,18 @@ export async function getPlaceDetails(placeId: string, fields: string[], session
     return { error: `PlaceDetailsリクエスト失敗 : ${response.status}` }
   }
   
-  const data: GooglePlacesDetailsApiResponseType = await response.json();
+  // json() → Response の body を文字列として読み取り、JSONとしてパースして JS オブジェクトに変換する
+  //          json()の内部で、response.text()、JSON.parse()が実行されていてる。
+  const data: GooglePlacesDetailsApiResponseType = await response.json(); // 
   // console.log(data); // { location: { latitude: 34.6882322, longitude: 135.5892084 } }
   
-  const results = {};
+  const results: PlaceDetailsAll = {};
 
   // locationが指定されてある場合 → API呼び出しで異なるので条件分岐
-  if(fields.includes("location") && data.location) {
+  if(fields.includes("location") && data.location) { // 引数、レスポンスにlocationがあるかどうか
     results.location = data.location;
   }
+  // console.log(results); // { location: { latitude: 34.6882322, longitude: 135.5892084 } }
 
   return { data: results }
 }

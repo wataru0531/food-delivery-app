@@ -97,9 +97,9 @@ export default function AddressModal(){
       await selectSuggestionAction(suggestion, sessionToken);
 
       setSessionToken(uuidv4()); // トークンを更新。使いまわすことができないため。
-
     } catch(e) {
-      alert("予期せぬエラーが発生しました。");
+      console.error(e);
+      window.alert("予期せぬエラーが発生しました。");
     }
   
   }
@@ -122,7 +122,6 @@ export default function AddressModal(){
               placeholder="Type a command or search..." 
             />
           </div>
-
           <CommandList>
             {
               inputText ? (
