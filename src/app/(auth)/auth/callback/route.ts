@@ -13,12 +13,13 @@ import { createClient } from '@/lib/supabase/server'
 // 　というレスポンスを返す。
 //   ブラウザはそれを受け取ると、そのURLにGETリクエストを送信するため。
 export async function GET(request: Request) {
-  // console.log(request.url); 
+  console.log("requestURL!!", request.url); 
   // // http://localhost:3000/auth/callback?code=aeb4f261-961d-4e44-9ec7-7c2f24565367
   const { searchParams, origin } = new URL(request.url);
   // console.log(searchParams, origin);
   // URLSearchParams { 'code' => 'aeb4f261-961d-4e44-9ec7-7c2f24565367' } http://localhost:3000
   const code = searchParams.get('code'); // ⭐️ Googleが発行した認可コード
+  // console.log("code!!", code);
   let next = searchParams.get('next') ?? '/'; // ログイン後にどのパスに移動するか
   // console.log(next); // /
   

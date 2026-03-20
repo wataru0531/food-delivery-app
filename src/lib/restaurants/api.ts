@@ -343,7 +343,7 @@ export async function getPlaceDetails(placeId: string, fields: string[], session
   
   // json() → Response の body を文字列として読み取り、JSONとしてパースして JS オブジェクトに変換する
   //          json()の内部で、response.text()、JSON.parse()が実行されていてる。
-  const data: GooglePlacesDetailsApiResponseType = await response.json(); // 
+  const data: GooglePlacesDetailsApiResponseType = await response.json();
   // console.log(data); // { location: { latitude: 34.6882322, longitude: 135.5892084 } }
   
   const results: PlaceDetailsAll = {};
