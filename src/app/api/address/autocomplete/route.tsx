@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
 
     const data: GooglePlacesAutoCompleteResponseType = await response.json();
     // console.log(data); // { suggestions: [ { placePrediction: [Object] }, { placePrediction: [Object] }, { placePrediction: [Object] }, ...] }, ... 
-    console.log(JSON.stringify(data, null, 2)); 
+    // console.log(JSON.stringify(data, null, 2)); 
 
     const suggestions = data.suggestions ?? [];
     // console.log(suggestions);
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
     // → 型ガード。placeId、placeName、address_textが必ずある状態で返す
     //           undefinedの可能性があるが、trueなら、TypeScriptにsuggestionはその型だと伝える
 
-    console.log(results); //[{ placeId: 'ChIJdfnUY5IPAWARH0gKwi4GYAM', placeName: '鳥せい本店', address_text: '京都府京都市伏見区上油掛町１８６' }, ... ]
+    // console.log(results); //[{ placeId: 'ChIJdfnUY5IPAWARH0gKwi4GYAM', placeName: '鳥せい本店', address_text: '京都府京都市伏見区上油掛町１８６' }, ... ]
 
     return NextResponse.json(results);
 

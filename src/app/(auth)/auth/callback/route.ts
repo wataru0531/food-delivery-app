@@ -13,7 +13,7 @@ import { createClient } from '@/lib/supabase/server'
 // 　というレスポンスを返す。
 //   ブラウザはそれを受け取ると、そのURLにGETリクエストを送信するため。
 export async function GET(request: Request) {
-  console.log("requestURL!!", request.url); 
+  // console.log(request.url); 
   // // http://localhost:3000/auth/callback?code=aeb4f261-961d-4e44-9ec7-7c2f24565367
   const { searchParams, origin } = new URL(request.url);
   // console.log(searchParams, origin);
@@ -33,20 +33,29 @@ export async function GET(request: Request) {
 
     // ✅ JWTセッションをCookieに保存する処理
     // ① Googleログイン
+    //    → ユーザーがGoogleで認証 ... 本人確認はGoogleがやる
     // ② Googleが code(認可コード) をブラウザ経由でアプリに発行
+    //    → この code は一時的な引換券(数分で失効)。ユーザー情報ではないし、トークンでもない。
     // ③ アプリが code を受け取る
-    // ④ SupabaseがGoogleのトークンエンドポイントに code を渡す 👉 ここからが exchangeCodeForSession
-    //    → Googleが最初からアクセストークンをブラウザに渡していたら、JSから簡単に盗めるため
-    // ⑤ Googleが認可コードを access_token に交換して返す
+    // ④ Supabase が Googleのトークンエンドポイントに code を渡す 👉 ここからが exchangeCodeForSession
+    //    → ・Supbase が Googleに問いあわせ。「このcode本物？」。
+    //      ・「このcodeの人のデータをください」と送る。
+    // ⑤ ⭐️ Googleがcode(認可コード)を、 
+    //       access_token(API用)、id_token(ユーザー情報入りJWT)、refresh_token(場合による) に交換して返す。
     // ⑥ Supabaseがその情報を検証
-    // ⑦ Supabaseが独自のJWTセッションを発行
-    //    → グーブルが発行するアクセストークンは“Google用”だから
+    //    → 改竄されていないか、Googleが発行したか、期限切れじゃないか
+    // ⑦ Supabaseがそれらの情報を「材料」にして、独自のJWTを発行
+    //    → access_token、refresh_tokenの2つ。
+    //    → なぜGoogleが発行したトークンを使わない？ → Googleが発行するアクセストークンは“Google用”だから
     //      アプリのユーザー管理を統一するため
     //      セキュリティと制御のため
-    // ⑧ Cookieに保存
-    // ※ Cookieに保存した場合は、自動でサーバーにも送信される
+    // ⑧ Cookieに保存 → JWT(Supabase製)をCookieに入れる
+    //                  Cookieに保存した場合は、自動でサーバーにも送信される
     // ⑨ 次回アクセス時、サーバーがCookieからJWT読み取り
-    // ➓ ログイン状態を維持
+    // ➓ ログイン状態を維持 
+    //    → 毎回これを行う。Cookie → JWT → ユーザー特定
+    //   ⭐️ JWTは1時間後に期限切れするが、Supabaseが自動更新 → 新しいJWTを発行
+    //      → この時にリフレッシュトークンをSupabaseに送り、Supabaseにまた新たにJWTをもらう
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     
     // 
@@ -58,9 +67,9 @@ export async function GET(request: Request) {
       const isLocalEnv = process.env.NODE_ENV === 'development'; // 開発環境かどうかを確認
       // console.log(isLocalEnv); // true
 
-      if(isLocalEnv) {
+      if(isLocalEnv) { // 開発環境かどうか
         return NextResponse.redirect(`${origin}${next}`); // 👉 開発環境のurlにリダイレクト
-      } else if (forwardedHost) {
+      } else if (forwardedHost) { // 本番環境かどうか
         return NextResponse.redirect(`https://${forwardedHost}${next}`)
       } else {
         return NextResponse.redirect(`${origin}${next}`)
