@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
+import useSWR from 'swr';
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
@@ -22,7 +23,6 @@ export default function AddressModal(){
   const [ suggestions, setSuggestions ] = useState<AddressSuggestionType[]>([]);
   const [ isLoading, setIsLoading ] = useState(false);
   const [ errorMessage, setErrorMessage ] = useState<string | null>(null);
-
 
   // ✅ 表示されたサジェスチョンを取得するAPI → サーバーサイドでAPIを叩く
   //    セッショントークンも渡す → サジェスチョンを取得するために使う
@@ -71,6 +71,7 @@ export default function AddressModal(){
   }, 500); // 0.5秒待ってから中のコールバックが発火
   
   // ✅ inputTextの内容が変更するにつれ発火
+  // useEffect → useSWRよりも、特定のデータを取得するのであればuseEffectの方が向いている
   useEffect(() => {
     if(!inputText.trim()){ // 検索テキストがない場合。空白は切り取り
       // setOpen(false);
@@ -84,6 +85,19 @@ export default function AddressModal(){
 
     fetchSuggestions(inputText);
   }, [ inputText ]);
+
+
+
+  // ⭐️ useSWR
+  //    → ・データを自動でキャッシュ
+  // 　　　・「古いデータ(キャッシュ)をまず表示 → バックグラウンドで最新データ取得」
+  //         ... 比較が行われて新しいのなら更新
+  //      ・たった2行でデータ、エラー、ローディングを設定できる
+  // fetcher ... JSONデータを使用する通常のRESTful APIの場合、ネイティブのfetchをラップしたfetcher関数を作成する必要がある
+  const fetcher = (url: string) => fetch(url).then(res => res.json());
+  const { data, error, isLoading: loading } = useSWR(`/api/address`, fetcher);
+
+
 
   // ✅ サジェスチョンを選択した時の処理
   const handleSelectSuggestion = async (suggestion: AddressSuggestionType) => {
@@ -101,7 +115,6 @@ export default function AddressModal(){
       console.error(e);
       window.alert("予期せぬエラーが発生しました。");
     }
-  
   }
 
   return(

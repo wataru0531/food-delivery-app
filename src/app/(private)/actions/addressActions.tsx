@@ -28,7 +28,7 @@ export async function selectSuggestionAction(suggestion: AddressSuggestionType, 
   // console.log(user);
   if(!user || userError) redirect("/login"); // ログインしている状態だが一応書いておく
 
-  // ✅ データベースに保存 addressesテーブルに保存
+  // ✅ 住所情報をデータベースに保存 addressesテーブルに保存
   const { data: newAddress, error: insertError } = await supabase.from("addresses").insert({
     name: suggestion.placeName,
     address_text: suggestion.address_text,
@@ -36,7 +36,7 @@ export async function selectSuggestionAction(suggestion: AddressSuggestionType, 
     longitude: locationData.location.longitude, // 経度
     user_id: user.id,
   })
-  .select("id").single(); // 👉 Profilesに保存するときidとして使う。一件文を取得
+  .select("id").single(); // 👉 今選択したサジェスチョンのidを、Profilesに保存するときのidとして使う。1件分を取得
   // console.log(newAddress); // { id: 3 }
 
   if(insertError) {
@@ -51,13 +51,12 @@ export async function selectSuggestionAction(suggestion: AddressSuggestionType, 
   const { data: updateData, error: updateError } = await supabase.from("profiles").update({
     selected_address_id: newAddress.id,
   })
-  .eq("id", user.id); // 👉 更新するレコードを指定。idがuser.idのレコードだけ更新するという意味
-  // console.log(updateData);
+  .eq("id", user.id); // 👉 更新するレコードを指定。
+                      // profilesテーブルのidカラムの値が、user.id(ログイン中のユーザー)と等しいレコードだけを対象にする
+  // console.log(updateData); // null 
 
   if(updateError) {
     console.error("プロフィールの更新に失敗しました。", updateError);
     throw new Error("プロフィールの更新に失敗しました。");
   }
-  
-
 }
