@@ -86,3 +86,14 @@ export type PlaceDetailsAll = {
     longitude?: number;
   }
 }
+
+
+// {id: 12, name: 'RAMEN JUNKEYZ', address_text: '大阪府東大阪市七軒家１２−２７', latitude: 34.6882322, longitude: 135.5892084}
+// ✅ 住所の型。使うキーだけデータのみを定義する
+export type AddressType = {
+  id: number;
+  name: string;
+  address_text: string;
+  latitude: number;
+  longitude: number;
+}

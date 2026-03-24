@@ -5,15 +5,20 @@
 
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { useDebouncedCallback } from "use-debounce";
-import { AddressSuggestionType } from "@/types";
+import { AddressSuggestionType, AddressType } from "@/types";
 import { AlertCircle, LoaderCircle, MapPin } from "lucide-react";
 import { selectSuggestionAction } from "@/app/(private)/actions/addressActions";
 
+
+type AddressResponseType = {
+  addressList: AddressType[];
+  selectedAddress: AddressType;
+}
 
 export default function AddressModal(){
   const [ inputText, setInputText ] = useState("");
@@ -87,22 +92,51 @@ export default function AddressModal(){
   }, [ inputText ]);
 
 
-
   // ⭐️ useSWR
   //    → ・データを自動でキャッシュ
   // 　　　・「古いデータ(キャッシュ)をまず表示 → バックグラウンドで最新データ取得」
   //         ... 比較が行われて新しいのなら更新
   //      ・たった2行でデータ、エラー、ローディングを設定できる
   // fetcher ... JSONデータを使用する通常のRESTful APIの場合、ネイティブのfetchをラップしたfetcher関数を作成する必要がある
-  const fetcher = (url: string) => fetch(url).then(res => res.json());
-  const { data, error, isLoading: loading } = useSWR(`/api/address`, fetcher);
+  const fetcher = async (url: string) => {
+    const response = await fetch(url);
 
+    if(!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error); // 👉 ここで、Route Handlerのエラーを、useSWRのerrorに渡すことができる
+    }
 
+    const data = await response.json();
+    return data;
+  }
+
+  const { 
+    data,  // Route Handlerでのエラーは、このdataに入る(デフォルト)。正常なデータも入る
+    error, // fetcherのエラーが入る(デフォルト)
+    isLoading: loading, 
+    mutate 
+  } = useSWR<AddressResponseType>(`/api/address`, fetcher);
+  // console.log("useSWR!!", data); // [{id: 12, name: 'RAMEN JUNKEYZ', address_text: '大阪府東大阪市七軒家１２−２７', latitude: 34.6882322, longitude: 135.5892084} ,{}]
+
+  if(error) {
+    console.error(error);
+    return <div className="text-red-500">{ error.message }</div>
+  }
+
+  if(loading) {
+    return (
+      <>
+        Loading
+        <LoaderCircle className="animate-spin" />
+      </>
+    )
+  }
+  
 
   // ✅ サジェスチョンを選択した時の処理
   const handleSelectSuggestion = async (suggestion: AddressSuggestionType) => {
     // console.log(suggestion); // {placeId: 'ChIJ222NUgAJAWARiFvAjMyIalo', placeName: 'RAMEN KATAMUKI（ラーメン カタムキ）Chicken & Vegan noodles shop', address_text: '京都府京都市下京区稲荷町４４８'}
-    
+
     // ✅ サーバーアクション
     // ⭐️ クライアントコンポーネントではerror.tsxでは捕まえられない。
     // → error.tsxはレンダリング中に発生したエラーしか監視していないため。
@@ -111,6 +145,9 @@ export default function AddressModal(){
       await selectSuggestionAction(suggestion, sessionToken);
 
       setSessionToken(uuidv4()); // トークンを更新。使いまわすことができないため。
+      setInputText(""); // サジェスチョンを空にする
+
+      mutate(); // ✅ useSWRでデータを再検証、取得して表示
     } catch(e) {
       console.error(e);
       window.alert("予期せぬエラーが発生しました。");
@@ -119,7 +156,13 @@ export default function AddressModal(){
 
   return(
     <Dialog>
-      <DialogTrigger>住所を選択</DialogTrigger>
+      <DialogTrigger>
+        <div className="flex flex-col items-start">
+          <p className="font-bold">選択中の住所</p>
+          <p>({ data?.selectedAddress.name ? data?.selectedAddress.name : "未選択" })</p>
+        </div>
+        
+      </DialogTrigger>
 
       <DialogContent>
         <DialogHeader>
@@ -176,13 +219,19 @@ export default function AddressModal(){
                   }
                 </>
               ) : (
-                // 保存済みの住所を表示
+                // 保存済みの住所を表示。ログイン中ユーザーに紐づいた住所のデータ
                 <>
                   <h3 className="mb-2 font-black text-lg">保存済みの住所</h3>
-
-                  <CommandItem className="p-5">Calendar</CommandItem>
-                  <CommandItem className="p-5">Search Emoji</CommandItem>
-                  <CommandItem className="p-5">Calculator</CommandItem>
+                  {
+                    data?.addressList.map((address) => (
+                      <CommandItem key={address.id} className="p-5">
+                        <div>
+                          <p className="font-bold">{ address.name }</p>
+                          <p className="">{ address.address_text }</p>
+                        </div>
+                      </CommandItem>
+                    ))
+                  }
                 </>
               )
             }
