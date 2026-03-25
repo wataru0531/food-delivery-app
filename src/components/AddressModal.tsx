@@ -12,7 +12,8 @@ import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@
 import { useDebouncedCallback } from "use-debounce";
 import { AddressSuggestionType, AddressType } from "@/types";
 import { AlertCircle, LoaderCircle, MapPin } from "lucide-react";
-import { selectSuggestionAction } from "@/app/(private)/actions/addressActions";
+import { selectAddressAction, selectSuggestionAction } from "@/app/(private)/actions/addressActions";
+import { cn } from "@/lib/utils";
 
 
 type AddressResponseType = {
@@ -132,7 +133,6 @@ export default function AddressModal(){
     )
   }
   
-
   // ✅ サジェスチョンを選択した時の処理
   const handleSelectSuggestion = async (suggestion: AddressSuggestionType) => {
     // console.log(suggestion); // {placeId: 'ChIJ222NUgAJAWARiFvAjMyIalo', placeName: 'RAMEN KATAMUKI（ラーメン カタムキ）Chicken & Vegan noodles shop', address_text: '京都府京都市下京区稲荷町４４８'}
@@ -154,6 +154,18 @@ export default function AddressModal(){
     }
   }
 
+  // ✅ 現在選択中のデータを更新
+  const handleSelectAddress = async (address: AddressType) => {
+    // console(address);
+    try {
+      await selectAddressAction(address);
+
+    } catch(error) {
+      console.error(error);
+      alert("予期せぬエラーが発生しました。");
+    }
+  }
+
   return(
     <Dialog>
       <DialogTrigger>
@@ -161,7 +173,6 @@ export default function AddressModal(){
           <p className="font-bold">選択中の住所</p>
           <p>({ data?.selectedAddress.name ? data?.selectedAddress.name : "未選択" })</p>
         </div>
-        
       </DialogTrigger>
 
       <DialogContent>
@@ -224,7 +235,11 @@ export default function AddressModal(){
                   <h3 className="mb-2 font-black text-lg">保存済みの住所</h3>
                   {
                     data?.addressList.map((address) => (
-                      <CommandItem key={address.id} className="p-5">
+                      <CommandItem 
+                        key={address.id} 
+                        className={cn("p-5", address.id === data?.selectedAddress.id && "bg-red-500")}
+                        // onSelect={() => handleSelectAddress(address)} // ⭐️ TODO 
+                      >
                         <div>
                           <p className="font-bold">{ address.name }</p>
                           <p className="">{ address.address_text }</p>

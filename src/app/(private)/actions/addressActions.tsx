@@ -2,12 +2,13 @@
 // 住所に関するサーバーアクション
 "use server";
 
-import { AddressSuggestionType } from "@/types";
+import { AddressSuggestionType, AddressType } from "@/types";
 import { getPlaceDetails } from "@/lib/restaurants/api";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
 
+// ✅ 選択したサジェスチョンをデータベースに保存 → Profilesテーブルを更新
 export async function selectSuggestionAction(suggestion: AddressSuggestionType, sessionToken: string) {
   // console.log(suggestion); // { placeId: 'ChIJZZPMQQDfAGARxEZtPATdWew', placeName: 'RAMEN JUNKEYZ', address_text: '大阪府東大阪市七軒家１２−２７'}
 
@@ -59,4 +60,16 @@ export async function selectSuggestionAction(suggestion: AddressSuggestionType, 
     console.error("プロフィールの更新に失敗しました。", updateError);
     throw new Error("プロフィールの更新に失敗しました。");
   }
+}
+
+
+
+// ✅ 現在選択中のサジェスチョンを更新する処理
+
+export async function selectAddressAction(address: AddressType) {
+  const supabase = await createClient();
+
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+
 }

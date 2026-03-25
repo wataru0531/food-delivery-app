@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     // ✅ ログイン中のユーザーに紐づく住所情報をテーブルから取得
     const { data: addressData, error: addressError } = await supabase.from("addresses")
       .select("id,name,address_text,latitude,longitude")
-      .eq("user_id", user.id); // addressesテーブルのuser_idとログイン中のユーザーのidとが同じデータのみ取得
+      .eq("user_id", user.id); // addressesテーブルのuser_idと、ログイン中のユーザーのidとが同じデータのみ取得
 
     if(addressError) {
       console.error("プロフィール情報の取得に失敗しました。", addressError);
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 
     // ✅ 現在選択中の住所情報を取得
     // → Profilesテーブルのselected_address_idと、それに紐づくaddressesテーブルのデータを取得する
-    //   下記の書き方で外部キーが貼られているので、自動でJOINしてくれる
+    //   Profilesのselected_address_id と addressesのid で外部キーが貼られているので、自動でJOINしてくれる
     const { data: selectedAddressData, error: selectedDataError } = await supabase.from("profiles")
     .select("addresses(id,name,address_text,latitude,longitude)")
     .eq("id", user.id)
@@ -64,7 +64,6 @@ export async function GET(request: NextRequest) {
     console.error(error);
     NextResponse.json({ error: "例外的なエラーが発生しました。" })
   }
-
 }
 
 
