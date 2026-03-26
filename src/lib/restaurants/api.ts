@@ -4,6 +4,9 @@
 
 import { GooglePlacesDetailsApiResponseType, GooglePlacesSearchApiResponse, PlaceDetailsAll } from "@/types";
 import { transformPlaceResult } from "./utils";
+import { createClient } from "../supabase/server";
+import { redirect } from "next/navigation";
+import { convertServerPatchToFullTree } from "next/dist/client/components/segment-cache/navigation";
 
 
 // ✅ 近くのラーメン店を取得
@@ -355,4 +358,37 @@ export async function getPlaceDetails(placeId: string, fields: string[], session
   // console.log(results); // { location: { latitude: 34.6882322, longitude: 135.5892084 } }
 
   return { data: results }
+}
+
+// ✅ 緯度、経度のデータを取得
+// 👉 profilesテーブルのselected_address_idに紐づいている、
+//   addressesテーブルのidと一致する住所の緯度、経度を取得する
+export async function fetchLocation(){
+  const DEFAULT_LOCATION = { lat: 34.9260799, lng: 135.708068 } // 初期の緯度、経度。ユーザーが何も指定していないときのデータ
+
+  const supabase = await createClient();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if(userError || !user) {
+    redirect("/login");  
+  }
+
+  // 選択中の住所の緯度と経度を取得
+  // profilesテーブルのselected_address_idと、addressesテーブルのidとが紐づいている
+  const { data: selectedAddress, error: selectedAddressError }
+    = await supabase.from("profiles")
+            .select(`addresses(latitude,longitude)`) // addressesテーブルから欲しいカラムを記述
+            .eq("id", user.id) // どのレコードからデータを取得するか。
+                                // profilesテーブルのidと、ログイン中のユーザーのid
+            .single(); // 選択中の住所は1件なので
+  
+  if(selectedAddressError) {
+    console.error("緯度と経度の取得に失敗しました。", selectedAddressError);
+    throw new Error("緯度と経度の取得に失敗しました。");
+    // → errorオブジェクトを返すのではなくて、ここでは例外をなげてerror.tsxに捕まえさせる。
+  }
+
+  const lat = selectedAddress.addresses?.latitude ?? DEFAULT_LOCATION.lat;
+  const lng = selectedAddress.addresses?.longitude ?? DEFAULT_LOCATION.lng;
+
+  return { lat, lng };
 }

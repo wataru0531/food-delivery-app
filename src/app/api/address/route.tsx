@@ -17,6 +17,7 @@ import { NextRequest, NextResponse } from "next/server";
 // Next.js は ルート単位で自動的に error.tsx にフォールバックする。なのでtry catchはその意味で必要ない
 
 
+// ✅ ログイン中のユーザーに紐づく住所、現在選択中の住所を取得
 export async function GET(request: NextRequest) {
   try {
     let addressList: AddressType[] = [];

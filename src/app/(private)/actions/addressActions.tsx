@@ -65,11 +65,37 @@ export async function selectSuggestionAction(suggestion: AddressSuggestionType, 
 
 
 // ✅ 現在選択中のサジェスチョンを更新する処理
-
-export async function selectAddressAction(address: AddressType) {
+export async function selectAddressAction(addressId: number) { // サジェスチョンのid
   const supabase = await createClient();
-
   const { data: { user }, error: userError } = await supabase.auth.getUser();
 
+  if(userError || !user) redirect("/login");
 
+  const { error: updateError } = await supabase.from("profiles")
+                                .update({ selected_address_id: addressId })
+                                .eq("id", user.id); // ログイン中のユーザーと同じ
+  
+  if(updateError) {
+    console.error("選択中の住所の変更に失敗しました。", updateError);
+    throw new Error("選択中の住所の変更に失敗しました。");
+  }
+}
+
+
+ // ✅ クリックした、ログイン中のユーザーに紐づく住所を1つ削除
+export async function deleteAddressAction(addressId: number) {
+  // console.log("addressId!!", addressId);
+  const supabase = await createClient();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if(userError || !user) redirect("/login");
+
+  const { error: deleteError } = await supabase.from("addresses")
+    .delete()
+    .eq("id", addressId) // addressesテーブルのidが、渡ってきたidと一致すれば削除
+    .eq("user_id", user.id); // addressesテーブルのidが、ログイン中のユーザーのidと一致する住所だけ削除
+
+  if(deleteError){
+    console.error("選択中の住所の削除に失敗しました。", deleteError);
+    throw new Error("選択中の住所の削除に失敗しました。");
+  }
 }

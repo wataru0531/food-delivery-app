@@ -11,9 +11,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { useDebouncedCallback } from "use-debounce";
 import { AddressSuggestionType, AddressType } from "@/types";
-import { AlertCircle, LoaderCircle, MapPin } from "lucide-react";
-import { selectAddressAction, selectSuggestionAction } from "@/app/(private)/actions/addressActions";
+import { AlertCircle, LoaderCircle, MapPin, Trash2 } from "lucide-react";
+import { deleteAddressAction, selectAddressAction, selectSuggestionAction } from "@/app/(private)/actions/addressActions";
 import { cn } from "@/lib/utils";
+import { Button } from "./ui/button";
 
 
 type AddressResponseType = {
@@ -29,6 +30,7 @@ export default function AddressModal(){
   const [ suggestions, setSuggestions ] = useState<AddressSuggestionType[]>([]);
   const [ isLoading, setIsLoading ] = useState(false);
   const [ errorMessage, setErrorMessage ] = useState<string | null>(null);
+  const [ open, setOpen ] = useState(false); // モーダルの開閉状態
 
   // ✅ 表示されたサジェスチョンを取得するAPI → サーバーサイドでAPIを叩く
   //    セッショントークンも渡す → サジェスチョンを取得するために使う
@@ -93,7 +95,8 @@ export default function AddressModal(){
   }, [ inputText ]);
 
 
-  // ⭐️ useSWR
+  // ✅ ログイン中のユーザーに紐づく住所、現在選択中の住所を取得
+  // ⭐️ useSWR  
   //    → ・データを自動でキャッシュ
   // 　　　・「古いデータ(キャッシュ)をまず表示 → バックグラウンドで最新データ取得」
   //         ... 比較が行われて新しいのなら更新
@@ -103,7 +106,7 @@ export default function AddressModal(){
     const response = await fetch(url);
 
     if(!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json(); // エラーをここで受け取る。
       throw new Error(errorData.error); // 👉 ここで、Route Handlerのエラーを、useSWRのerrorに渡すことができる
     }
 
@@ -127,8 +130,7 @@ export default function AddressModal(){
   if(loading) {
     return (
       <>
-        Loading
-        <LoaderCircle className="animate-spin" />
+        Loading <LoaderCircle className="animate-spin" />
       </>
     )
   }
@@ -156,9 +158,14 @@ export default function AddressModal(){
 
   // ✅ 現在選択中のデータを更新
   const handleSelectAddress = async (address: AddressType) => {
-    // console(address);
+    // console.log("address!!", address);
+
     try {
-      await selectAddressAction(address);
+      await selectAddressAction(address.id);
+      mutate(); // useSWRでデータを再検証、取得
+
+      setOpen(false);
+      // router.refresh();
 
     } catch(error) {
       console.error(error);
@@ -166,12 +173,32 @@ export default function AddressModal(){
     }
   }
 
+  // ✅ クリックした、ログイン中のユーザーに紐づく住所を1つ削除
+  const handleDeleteAddress = async (addressId: number) => {
+    // console.log("addressId!!", addressId);
+    const ok = window.confirm(`この住所を削除しますか？: 住所アドレスID: ${addressId}`)
+    if(!ok) return;
+
+    try {
+      await deleteAddressAction(addressId);
+      mutate();
+
+    } catch(error) {
+      console.error(error);
+      alert("予期せぬエラーが発生しました。");
+    }
+
+  }
+
   return(
-    <Dialog>
+    <Dialog 
+      open={ open } // モーダルの開閉状態。
+      onOpenChange={(prevState) => setOpen(prevState)} // DialogTrigger、黒背景をクリックしすると発火
+    >
       <DialogTrigger>
         <div className="flex flex-col items-start">
           <p className="font-bold">選択中の住所</p>
-          <p>({ data?.selectedAddress.name ? data?.selectedAddress.name : "未選択" })</p>
+          <p>({ data?.selectedAddress?.name ? data?.selectedAddress?.name : "未選択" })</p>
         </div>
       </DialogTrigger>
 
@@ -237,13 +264,22 @@ export default function AddressModal(){
                     data?.addressList.map((address) => (
                       <CommandItem 
                         key={address.id} 
-                        className={cn("p-5", address.id === data?.selectedAddress.id && "bg-red-500")}
-                        // onSelect={() => handleSelectAddress(address)} // ⭐️ TODO 
+                        className={cn("p-5 flex items-center justify-between", address.id === data?.selectedAddress?.id && "bg-muted")}
+                        onSelect={() => handleSelectAddress(address)} 
                       >
                         <div>
                           <p className="font-bold">{ address.name }</p>
                           <p className="">{ address.address_text }</p>
                         </div>
+                        <Button 
+                          size={"icon"} variant={"ghost"}
+                          onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+                            e.stopPropagation(); // 👉 バブリングさせない
+                            handleDeleteAddress(address.id) 
+                          }}
+                        >
+                          <Trash2 />
+                        </Button>
                       </CommandItem>
                     ))
                   }
