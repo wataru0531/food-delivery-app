@@ -9,7 +9,7 @@ import { Categories } from "@/components/Categories";
 import RestaurantCard from "@/components/RestaurantCard";
 import { RestaurantList } from "@/components/RestaurantList";
 import Section from "@/components/Section";
-import { fetchRamenRestaurants, fetchRestaurants } from "@/lib/restaurants/api";
+import { fetchLocation, fetchRamenRestaurants, fetchRestaurants } from "@/lib/restaurants/api";
 
 // layoutと同じなら書かなくて良い。継承される。
 export const metadata: Metadata = {
@@ -19,10 +19,13 @@ export const metadata: Metadata = {
 
 
 export default async function Home() {
-  const { data: nearbyRamenRestaurants, error: nearbyRamenRestaurantsError } = await fetchRamenRestaurants();
+  const { lat, lng } = await fetchLocation(); // 👉 選択中の住所の緯度と経度を取得
+  // console.log(lat, lng); // 34.964756 135.7693602
+
+  const { data: nearbyRamenRestaurants, error: nearbyRamenRestaurantsError } = await fetchRamenRestaurants(lat, lng);
   // console.log(nearbyRamenRestaurants, error); // {places: Array(2)} undefined
 
-  const { data: nearbyRestaurants, error: nearbyRestaurantsError } = await fetchRestaurants();
+  const { data: nearbyRestaurants, error: nearbyRestaurantsError } = await fetchRestaurants(lat, lng);
   // console.log(nearbyRestaurants);
   // (10) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, _debugInfo: Array(1)]
 

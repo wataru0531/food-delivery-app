@@ -2,15 +2,16 @@
 // ✅ レストランに関するAPI 
 // → ⭐️ キャッシュがPOSTでは効かないので、app/api/places/route.ts に記述
 
-import { GooglePlacesDetailsApiResponseType, GooglePlacesSearchApiResponse, PlaceDetailsAll } from "@/types";
+import { GooglePlacesDetailsApiResponseType, GooglePlacesSearchApiResponse, LocationType, PlaceDetailsAll } from "@/types";
 import { transformPlaceResult } from "./utils";
 import { createClient } from "../supabase/server";
 import { redirect } from "next/navigation";
-import { convertServerPatchToFullTree } from "next/dist/client/components/segment-cache/navigation";
+
 
 
 // ✅ 近くのラーメン店を取得
-export async function fetchRamenRestaurants(){
+
+export async function fetchRamenRestaurants(lat:number, lng: number){
   const url = "https://places.googleapis.com/v1/places:searchNearby";
   const apiKey = process.env.GOOGLE_API_KEY;
 
@@ -29,9 +30,9 @@ export async function fetchRamenRestaurants(){
     maxResultCount: 10, // 取得するデータの件数
     locationRestriction: { // 取得するデータの地点
       circle: {
-        center: {
-          latitude: 34.9260799, // 緯度 ... Googleマップから取得可能
-          longitude: 135.708068
+        center: { // ⭐️ この地点から半径1000m以内のラーメン店のデータを取得する
+          latitude: lat, // 緯度 ... Googleマップから取得可能
+          longitude: lng
         }, // 経度
         radius: 1000.0, // 半径.500メートルを指定
       },
@@ -101,7 +102,7 @@ export async function getPhotoUrl(name: string, maxWidth = 400){
 
 
 // ✅ 近くのレストランを取得
-export async function fetchRestaurants(){
+export async function fetchRestaurants(lat:number, lng: number){
   const url = "https://places.googleapis.com/v1/places:searchNearby";
   const apiKey = process.env.GOOGLE_API_KEY;
 
@@ -135,8 +136,8 @@ export async function fetchRestaurants(){
     locationRestriction: {
       circle: {
         center: {
-          latitude: 34.9260799,
-          longitude: 135.708068
+          latitude: lat,
+          longitude: lng,
         },
         radius: 1000.0,
       },
@@ -186,7 +187,7 @@ export async function fetchRestaurants(){
 
 
 // ✅ カテゴリ検索
-export async function fetchCategoryRestaurants(categoryType: string){
+export async function fetchCategoryRestaurants(categoryType: string, lat:number, lng: number){
   const url = "https://places.googleapis.com/v1/places:searchNearby";
   const apiKey = process.env.GOOGLE_API_KEY;
 
@@ -202,8 +203,8 @@ export async function fetchCategoryRestaurants(categoryType: string){
     locationRestriction: { 
       circle: {
         center: {
-          latitude: 34.9260799,
-          longitude: 135.708068
+          latitude: lat,
+          longitude: lng
         }, 
         radius: 1000.0,
       },
@@ -247,7 +248,7 @@ export async function fetchCategoryRestaurants(categoryType: string){
 
 
 // ✅ キーワード検索でのAPI
-export async function fetchRestaurantsByKeyword(query: string){
+export async function fetchRestaurantsByKeyword(query: string, lat:number, lng: number){
   const url = "https://places.googleapis.com/v1/places:searchText";
   const apiKey = process.env.GOOGLE_API_KEY;
 
@@ -264,8 +265,8 @@ export async function fetchRestaurantsByKeyword(query: string){
     locationBias: { // 指定したエリア外も取得する
       circle: {
         center: {
-          latitude: 34.9260799,
-          longitude: 135.708068
+          latitude: lat,
+          longitude: lng
         }, 
         radius: 1000.0,
       },
@@ -360,11 +361,11 @@ export async function getPlaceDetails(placeId: string, fields: string[], session
   return { data: results }
 }
 
-// ✅ 緯度、経度のデータを取得
+// ✅ 現在選択中の住所の緯度、経度を取得
 // 👉 profilesテーブルのselected_address_idに紐づいている、
 //   addressesテーブルのidと一致する住所の緯度、経度を取得する
 export async function fetchLocation(){
-  const DEFAULT_LOCATION = { lat: 34.9260799, lng: 135.708068 } // 初期の緯度、経度。ユーザーが何も指定していないときのデータ
+  const DEFAULT_LOCATION = { lat: 34.9569024, lng: 135.7676544 } // 初期の緯度、経度。京都市。ユーザーが何も指定していないときのデータ
 
   const supabase = await createClient();
   const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -372,7 +373,7 @@ export async function fetchLocation(){
     redirect("/login");  
   }
 
-  // 選択中の住所の緯度と経度を取得
+  // ✅ 選択中の住所の緯度と経度を取得
   // profilesテーブルのselected_address_idと、addressesテーブルのidとが紐づいている
   const { data: selectedAddress, error: selectedAddressError }
     = await supabase.from("profiles")
@@ -381,6 +382,8 @@ export async function fetchLocation(){
                                 // profilesテーブルのidと、ログイン中のユーザーのid
             .single(); // 選択中の住所は1件なので
   
+  // console.log(selectedAddress);
+
   if(selectedAddressError) {
     console.error("緯度と経度の取得に失敗しました。", selectedAddressError);
     throw new Error("緯度と経度の取得に失敗しました。");
@@ -389,6 +392,8 @@ export async function fetchLocation(){
 
   const lat = selectedAddress.addresses?.latitude ?? DEFAULT_LOCATION.lat;
   const lng = selectedAddress.addresses?.longitude ?? DEFAULT_LOCATION.lng;
-
+  // console.log(lat, lng);
   return { lat, lng };
 }
+
+

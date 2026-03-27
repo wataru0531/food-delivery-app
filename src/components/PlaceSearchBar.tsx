@@ -23,8 +23,13 @@ import { useDebouncedCallback } from "use-debounce";
 import { v4 as uuidv4 } from "uuid";
 import { RestaurantSuggestionType } from "@/types";
 
+type PlaceSearchBarPropsType = {
+  lat: number;
+  lng: number;
+}
 
-export default function PlaceSearchBar(){
+
+export default function PlaceSearchBar({ lat, lng }: PlaceSearchBarPropsType){
   const [ open, setOpen ] = useState(false);
   const [ inputText, setInputText ] = useState("");
   // ✅ サジェスチョンをAPIで取得する時に使うトークンを作り管理
@@ -58,7 +63,8 @@ export default function PlaceSearchBar(){
 
     try {
       // console.log("fetchSuggestions!!");
-      const response = await fetch(`/api/restaurant/autocomplete?input=${_inputText}&sessionToken=${sessionToken}`);
+      // ✅ 現在選択中の住所(緯度、経度)に紐づいたサジェスチョンを取得
+      const response = await fetch(`/api/restaurant/autocomplete?input=${_inputText}&sessionToken=${sessionToken}&lat=${lat}&lng=${lng}`);
       // console.log(response);
 
       // dataが取れてきていない時の処理
@@ -82,7 +88,7 @@ export default function PlaceSearchBar(){
       setIsLoading(false);
     }
 
-  }, 500); // 0.5秒待ってから中のコールバックが発火suru
+  }, 500); // 0.5秒待ってから中のコールバックが発火
 
   // ✅ inputTextの内容が変更するにつれ発火
   useEffect(() => {

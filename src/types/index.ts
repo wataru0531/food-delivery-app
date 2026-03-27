@@ -97,3 +97,9 @@ export type AddressType = {
   latitude: number;
   longitude: number;
 }
+
+// ✅ 緯度、経度の型 ... fetchRamenRestaurant()などで使う
+export type LocationType = {
+  lat: number;
+  lng: number;
+}

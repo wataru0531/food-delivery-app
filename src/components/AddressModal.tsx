@@ -15,6 +15,7 @@ import { AlertCircle, LoaderCircle, MapPin, Trash2 } from "lucide-react";
 import { deleteAddressAction, selectAddressAction, selectSuggestionAction } from "@/app/(private)/actions/addressActions";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 
 
 type AddressResponseType = {
@@ -23,6 +24,7 @@ type AddressResponseType = {
 }
 
 export default function AddressModal(){
+  const router = useRouter();
   const [ inputText, setInputText ] = useState("");
   const [ sessionToken, setSessionToken ] = useState(uuidv4());
   // console.log(sessionToken);
@@ -150,23 +152,22 @@ export default function AddressModal(){
       setInputText(""); // サジェスチョンを空にする
 
       mutate(); // ✅ useSWRでデータを再検証、取得して表示
+      router.refresh(); // 👉 サーバーコンポーネントを再実行、最新データで書き直す
+                        //    今表示しているルートツリーのみ再実行ということ
     } catch(e) {
       console.error(e);
       window.alert("予期せぬエラーが発生しました。");
     }
   }
 
-  // ✅ 現在選択中のデータを更新
+  // ✅ 現在選択中の住所を更新
   const handleSelectAddress = async (address: AddressType) => {
     // console.log("address!!", address);
-
     try {
       await selectAddressAction(address.id);
-      mutate(); // useSWRでデータを再検証、取得
-
+      mutate(); // useSWRでデータを再検証、取得。クライアント側のデータのみ更新
       setOpen(false);
-      // router.refresh();
-
+      router.refresh();
     } catch(error) {
       console.error(error);
       alert("予期せぬエラーが発生しました。");
@@ -180,14 +181,18 @@ export default function AddressModal(){
     if(!ok) return;
 
     try {
+      const selectedAddressId = data?.selectedAddress?.id; // 現在の選択中の住所のidを取得
       await deleteAddressAction(addressId);
       mutate();
 
+      // 現在選択中の住所
+      if(selectedAddressId === addressId){ 
+        router.refresh(); 
+      }
     } catch(error) {
       console.error(error);
       alert("予期せぬエラーが発生しました。");
     }
-
   }
 
   return(
@@ -198,7 +203,7 @@ export default function AddressModal(){
       <DialogTrigger>
         <div className="flex flex-col items-start">
           <p className="font-bold">選択中の住所</p>
-          <p>({ data?.selectedAddress?.name ? data?.selectedAddress?.name : "未選択" })</p>
+          <p>({ data?.selectedAddress?.name ? data?.selectedAddress?.name : "未選択(=京都市)" })</p>
         </div>
       </DialogTrigger>
 

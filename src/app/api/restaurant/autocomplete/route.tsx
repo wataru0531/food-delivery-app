@@ -12,6 +12,8 @@ export async function GET(request: NextRequest) {
   // URLSearchParams { 'input' => 'こんにちは', 'sessionToken' => '5a13872e-bf60-4628-8c23-c25fa69bad02' }
   const input = searchParams.get("input");
   const sessionToken = searchParams.get("sessionToken");
+  const lat = searchParams.get("lat");
+  const lng = searchParams.get("lng")
 
   if(!input) { // フロント側でもエラー対処はしているが、バックエンドでも対処
     return NextResponse.json({ error: "文字を入力してください" }, { status: 400 });
@@ -45,10 +47,10 @@ export async function GET(request: NextRequest) {
       locationBias: { // 検索を優先する場所。→ ただし絶対ではない
         circle: {
           center: {
-            latitude: 34.9260799, // 京都市
-            longitude: 135.708068
+            latitude: lat,
+            longitude: lng
           }, 
-          radius: 1000.0, // 1キロ圏を優先
+          radius: 500.0, // 1キロ圏を優先
         }
       },
       languageCode: "ja",

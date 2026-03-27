@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 
 import { Categories } from "@/components/Categories";
 import { RestaurantList } from "@/components/RestaurantList";
-import { fetchCategoryRestaurants, fetchRestaurantsByKeyword } from "@/lib/restaurants/api";
+import { fetchCategoryRestaurants, fetchLocation, fetchRestaurantsByKeyword } from "@/lib/restaurants/api";
 
 type SearchPageProps = {
   searchParams: Promise<{ category: string, restaurant: string }>
@@ -14,6 +14,8 @@ type SearchPageProps = {
 
 // ✅ サーバーコンポーネントにはデフォルトでクエリパラメータが渡ってくる
 export default async function SearchPage({ searchParams }: SearchPageProps){
+  const { lat, lng } = await fetchLocation();
+
   // console.log(searchParams);  // ReactPromise {status: 'pending', value: null, reason: null, _children: Array(0), _debugChunk: null, …}
   // const result = await searchParams;
   // console.log(result); // {category: 'fast_food_restaurant'}
@@ -28,7 +30,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps){
 
   if (category) {
     // console.log("category in!!"); // 👉 カテゴリークリック
-    const { data: categoryRestaurants, error: fetchError } = await fetchCategoryRestaurants(category);
+    const { data: categoryRestaurants, error: fetchError } = await fetchCategoryRestaurants(category, lat, lng);
 
     if(!categoryRestaurants) {
       content = <p className="text-destructive">{fetchError}</p>;
@@ -41,7 +43,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps){
     }
   } else if(restaurant) {
     // console.log("restaurant in!!"); // 👉 検索キーワードをクリック
-    const { data: restaurants, error: fetchError } = await fetchRestaurantsByKeyword(restaurant);
+    const { data: restaurants, error: fetchError } = await fetchRestaurantsByKeyword(restaurant, lat, lng);
     // console.log(restaurants); // (10) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, _debugInfo: Array(1)]
     
     if(!restaurants) {
