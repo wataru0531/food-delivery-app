@@ -71,20 +71,30 @@ export type AddressSuggestionType = {
 }
 
 
-// ✅ Place Details API 緯度、経度の型
+// ✅ Place Details API resultsに入れる型
 export type GooglePlacesDetailsApiResponseType = {
   location?: {
     latitude?: number; // 緯 横
     longitude?: number; // 経度
   }
+  displayName?: {
+    languageCode?: string;
+    text?: string;
+  }
+  primaryType?: string;
+  photos: PlacePhoto[];
+
 }
 
-// ✅ getPlaceDetailsで使う。緯度、経度の型
+// ✅ getPlaceDetailsで使う。resultsに入れる型
 export type PlaceDetailsAll = {
   location?: {
     latitude?: number;
     longitude?: number;
   }
+  displayName?: string;
+  primaryType?: string;
+  photoUrl?: string;
 }
 
 

@@ -86,9 +86,9 @@ export async function fetchRamenRestaurants(lat:number, lng: number){
 }
 
 
-// ✅ Photosの画像urlを配列に加工して取得
+// ✅ Photosの画像urlを配列に加工して取得 → 画像を表示するurlを返す
 // → 画像1枚に対し1円かかる、それを一度に10枚取得するので1度のリクエストで10円かかってしまう。
-//   キャッシュを利生して金がかからないようにする。
+//   キャッシュを利用して金がかからないようにする。
 export async function getPhotoUrl(name: string, maxWidth = 400){
   "use cache"; // 👉 これより以下のコードがキャッシュされるのではなく、実行結果がキャッシュされる
                //    関数の中身が実行されるというよりも、保存されたreturnの値がそのまま返される。 
@@ -358,6 +358,18 @@ export async function getPlaceDetails(placeId: string, fields: string[], session
   }
   // console.log(results); // { location: { latitude: 34.6882322, longitude: 135.5892084 } }
 
+  if(fields.includes("displayName") && data.displayName?.text) {
+    results.displayName = data.displayName.text;
+  }
+  if(fields.includes("primaryType") && data.primaryType) {
+    results.primaryType = data.primaryType;
+  }
+  if(fields.includes("photos")) {
+    results.photoUrl = data.photos?.[0]?.name ? await getPhotoUrl(data.photos[0].name) 
+                                              : "/no-image.jpeg";
+  }
+  // console.log(results); // {displayName: 'ラーメン銀閣', primaryType: 'ramen_restaurant', photoUrl: 'https://places.googleapis.com/v1/places/ChIJjSyqgo…yBa8qlrcwFyauWD-CE8Uopl7FsQP0oSjvI&maxWidthPx=400'}
+  
   return { data: results }
 }
 

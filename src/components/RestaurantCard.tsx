@@ -27,13 +27,13 @@ type RestaurantCardProps = {
 }
 
 const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
-  const { restaurantName, photoUrl } = restaurant;
+  const { id, restaurantName, photoUrl } = restaurant;
   // console.log(restaurant);
   // {id: 'ChIJ58ZWi1IEAWARVLLkq8lYNj4', restaurantName: 'RA－MEN 赤影', primaryType: 'ramen_restaurant', photoUrl: 'no-image.jpeg'}
 
   return (
       <div className="relative">
-        <Link href="/abc" className="absolute w-full h-full z-10"></Link>
+        <Link href={`/restaurant/${id}`} className="absolute w-full h-full z-10"></Link>
         {/* 
           aspect-video ... 16 : 9 
         */}

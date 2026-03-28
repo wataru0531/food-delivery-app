@@ -22,9 +22,11 @@ export default async function Home() {
   const { lat, lng } = await fetchLocation(); // 👉 選択中の住所の緯度と経度を取得
   // console.log(lat, lng); // 34.964756 135.7693602
 
+  // ✅ ラーメン店
   const { data: nearbyRamenRestaurants, error: nearbyRamenRestaurantsError } = await fetchRamenRestaurants(lat, lng);
   // console.log(nearbyRamenRestaurants, error); // {places: Array(2)} undefined
 
+  // ✅ レストラン
   const { data: nearbyRestaurants, error: nearbyRestaurantsError } = await fetchRestaurants(lat, lng);
   // console.log(nearbyRestaurants);
   // (10) [{…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, {…}, _debugInfo: Array(1)]
