@@ -24,3 +24,4 @@ export function RestaurantList({ restaurants }: RestaurantListProps){
     </ul>
   )
 }
+

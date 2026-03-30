@@ -108,7 +108,6 @@ export async function GET(request: NextRequest) {
     // この条件を通ったものは、RestaurantSuggestionType だと保証するという意味。
 
     return NextResponse.json(results);
-
   } catch(error) { 
     console.error(error);
     return NextResponse.json({ error: "予期せぬエラーが発生しました。" });

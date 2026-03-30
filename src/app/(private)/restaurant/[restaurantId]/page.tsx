@@ -2,6 +2,7 @@
 // ✅ サジェスチョンで指定した店舗の詳細ページ
 
 import { Button } from "@/components/ui/button"
+import { fetchCategoryMenus } from "@/lib/menus/api";
 import { getPlaceDetails } from "@/lib/restaurants/api"
 import { Heart } from "lucide-react"
 import Image from "next/image"
@@ -30,11 +31,11 @@ export async function generateMetadata({ params, searchParams }: propsType) {
   }
 }
 
-
 type RestaurantPageProps = {
   params: Promise<{restaurantId: string}>;  // → 非同期で渡ってくるのでPromiseを指定
   searchParams: Promise<{sessionToken: string}>;
 }
+
 
 export default async function RestaurantPage({params, searchParams}: RestaurantPageProps){
   const { restaurantId } = await params; // urlのパラメータ(=フォルダ名の[restaurantId]の部分を取得
@@ -43,6 +44,13 @@ export default async function RestaurantPage({params, searchParams}: RestaurantP
 
   const { data: restaurant, error } = await getPlaceDetails(restaurantId, ["displayName","photos","primaryType"], sessionToken);
   // console.log(restaurant); // { displayName: 'ラーメン銀閣', primaryType: 'ramen_restaurant', photoUrl: 'https://places.googleapis.com/v1/places/ChIJjSyqgo…yBa8qlrcwFyauWD-CE8Uopl7FsQP0oSjvI&maxWidthPx=400'}
+
+  const primaryType = restaurant?.primaryType; // 店舗の種別
+  // console.log(p_rimaryType);
+
+  // ✅ 店舗の種別に応じたメニューを取得
+  const { data: categoryMenu, error: menusError } = primaryType ? fetchCategoryMenus(primaryType)
+                                      : { data: [] };
 
   if(error) notFound();
   if(!restaurant?.photoUrl) throw new Error("photoUrlがありません。");
