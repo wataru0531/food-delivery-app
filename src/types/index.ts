@@ -113,3 +113,20 @@ export type LocationType = {
   lat: number;
   lng: number;
 }
+
+
+
+// ✅　カテゴリーごとに分類した型
+export type CategoryMenusType = {
+  categoryName: string;
+  id: string;
+  items: MenuType[]
+}
+
+// ✅ カテゴリーごとに整形したデータ
+export type MenuType = {
+  id: number;
+  name: string;
+  photoUrl: string;
+  price: number;
+}

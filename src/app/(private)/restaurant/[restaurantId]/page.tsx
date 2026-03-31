@@ -48,9 +48,10 @@ export default async function RestaurantPage({params, searchParams}: RestaurantP
   const primaryType = restaurant?.primaryType; // 店舗の種別
   // console.log(p_rimaryType);
 
-  // ✅ 店舗の種別に応じたメニューを取得
-  const { data: categoryMenu, error: menusError } = primaryType ? fetchCategoryMenus(primaryType)
-                                      : { data: [] };
+  // ✅ 店舗の種別(primaryType)に応じたメニューを取得
+  const { data: categoryMenu, error: menusError } = primaryType ? await fetchCategoryMenus(primaryType)
+                                                                : { data: [] };
+  // console.log(categoryMenu); // (4) [{id: 'featured', categoryName: '注目商品', items: Array(8)}, {…}, {…},
 
   if(error) notFound();
   if(!restaurant?.photoUrl) throw new Error("photoUrlがありません。");
