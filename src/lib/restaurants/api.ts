@@ -365,8 +365,9 @@ export async function getPlaceDetails(placeId: string, fields: string[], session
     results.primaryType = data.primaryType;
   }
   if(fields.includes("photos")) {
-    results.photoUrl = data.photos?.[0]?.name ? await getPhotoUrl(data.photos[0].name) 
-                                              : "/no-image.jpeg";
+    // results.photoUrl = data.photos?.[0]?.name ? await getPhotoUrl(data.photos[0].name) 
+    //                                           : "/no-image.jpeg";
+    results.photoUrl = "/no-image.jpeg"; // 👉 料金がかかるのでここでは常にno-image画像を指定
   }
   // console.log(results); // {displayName: 'ラーメン銀閣', primaryType: 'ramen_restaurant', photoUrl: 'https://places.googleapis.com/v1/places/ChIJjSyqgo…yBa8qlrcwFyauWD-CE8Uopl7FsQP0oSjvI&maxWidthPx=400'}
   

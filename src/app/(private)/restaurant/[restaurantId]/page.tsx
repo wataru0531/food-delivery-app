@@ -2,6 +2,7 @@
 // ✅ サジェスチョンで指定した店舗の詳細ページ
 
 import { Button } from "@/components/ui/button"
+import MenuContent from "@/components/ui/MenuContent";
 import { fetchCategoryMenus } from "@/lib/menus/api";
 import { getPlaceDetails } from "@/lib/restaurants/api"
 import { Heart } from "lucide-react"
@@ -37,6 +38,7 @@ type RestaurantPageProps = {
 }
 
 
+// 
 export default async function RestaurantPage({params, searchParams}: RestaurantPageProps){
   const { restaurantId } = await params; // urlのパラメータ(=フォルダ名の[restaurantId]の部分を取得
   const { sessionToken } = await searchParams; // クエリパラメータの値を取得
@@ -49,42 +51,54 @@ export default async function RestaurantPage({params, searchParams}: RestaurantP
   // console.log(p_rimaryType);
 
   // ✅ 店舗の種別(primaryType)に応じたメニューを取得
-  const { data: categoryMenu, error: menusError } = primaryType ? await fetchCategoryMenus(primaryType)
+  const { data: categoryMenus, error: menusError } = primaryType ? await fetchCategoryMenus(primaryType)
                                                                 : { data: [] };
-  // console.log(categoryMenu); // (4) [{id: 'featured', categoryName: '注目商品', items: Array(8)}, {…}, {…},
+  // console.log(categoryMenus); // (4) [{id: 'featured', categoryName: '注目商品', items: Array(8)}, {…}, {…},
 
   if(error) notFound();
   if(!restaurant?.photoUrl) throw new Error("photoUrlがありません。");
   if(!restaurant?.displayName) throw new Error("displayNameがありません。")
 
   return(
-    <div>
-      <div className="h-64 rounded-xl shadow-md relative overflow-hidden">
-        <Image
-          src={restaurant.photoUrl}
-          fill
-          alt={ restaurant.displayName ?? "店舗画像" }
-          className="object-cover"
-          priority
-          sizes="(max-width: 1200px) 100vw, 1200px"
-        />
-        <Button 
-          size="icon"
-          variant="outline"
-          className="absolute top-4 right-4 shadow rounded-full"
-        >
-          <Heart color="gray" strokeWidth={3} size={15} />
-        </Button>
+    <>
+      <div>
+        <div className="h-64 rounded-xl shadow-md relative overflow-hidden">
+          <Image
+            src={restaurant.photoUrl}
+            fill
+            alt={ restaurant.displayName ?? "店舗画像" }
+            className="object-cover"
+            priority
+            sizes="(max-width: 1200px) 100vw, 1200px"
+          />
+          <Button 
+            size="icon"
+            variant="outline"
+            className="absolute top-4 right-4 shadow rounded-full"
+          >
+            <Heart color="gray" strokeWidth={3} size={15} />
+          </Button>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">{ restaurant.displayName }</h1>
+          </div>
+          <div className="flex-1">
+            <div className="ml-auto w-80 bg-yellow-300">検索バー</div>
+          </div>
+        </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{ restaurant.displayName }</h1>
-        </div>
-        <div className="flex-1">
-          <div className="ml-auto w-80 bg-yellow-300">検索バー</div>
-        </div>
-      </div>
-    </div>
+      {
+        !categoryMenus ? (
+          <p>{ menusError }</p>
+        ) : categoryMenus.length > 0 ? (
+          <MenuContent categoryMenus={ categoryMenus } />
+        ) : (
+          <p>メニューがありません。</p>
+        )
+      }
+    </>
   )
 }

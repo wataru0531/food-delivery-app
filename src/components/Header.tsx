@@ -4,7 +4,6 @@
 
 import Link from "next/link";
 
-import { JSX } from "react";
 import MenuSheet from "./MenuSheet";
 import PlaceSearchBar from "./PlaceSearchBar";
 import AddressModal from "./AddressModal";

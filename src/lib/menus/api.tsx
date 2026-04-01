@@ -14,6 +14,7 @@ export async function fetchCategoryMenus(primaryType: string) {
   // console.log(primaryType); // ramen_restaurant
 
   const supabase = await createClient();
+  const bucket = supabase.storage.from("menus"); // Supabaseのストレージのバケット(フォルダ)を指定
 
   const { data: menus, error: menusError } = await supabase
     .from("menus")
@@ -39,7 +40,7 @@ export async function fetchCategoryMenus(primaryType: string) {
                             name: menu.name,
                             price: menu.price,
                             // ストレージのバケット名を指定して画像を取得
-                            photoUrl: supabase.storage.from("menus").getPublicUrl(menu.image_path).data.publicUrl,
+                            photoUrl: bucket.getPublicUrl(menu.image_path).data.publicUrl,
                           }));
   // console.log("featuredItems!!", featuredItems)
   
@@ -48,7 +49,6 @@ export async function fetchCategoryMenus(primaryType: string) {
     categoryName: "注目商品",
     items: featuredItems, // 注目の商品の配列
   });
-
   // console.log("categoryMenus!!", categoryMenus)
 
   // ✅ カテゴリーごとに分類
@@ -64,7 +64,7 @@ export async function fetchCategoryMenus(primaryType: string) {
                         id: menu.id,
                         name: menu.name,
                         price: menu.price,
-                        photoUrl: supabase.storage.from("menus").getPublicUrl(menu.image_path).data.publicUrl,
+                        photoUrl: bucket.getPublicUrl(menu.image_path).data.publicUrl,
                       }));
     
     // ✅ 注目の商品を先頭にして、2つ目のインデックスからは、その他のカテゴリーに応じたデータにする
