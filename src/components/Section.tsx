@@ -24,9 +24,14 @@ export default function Section({ children, title, expandedContent }: SectionPro
         <h2 className="py-5 font-bold text-2xl">{ title }</h2>
         {/* <TextToggleButton /> */}
 
-        <Button onClick={ handleChange } className="xl:not-even:hover:cursor-pointer">
-          { isExpanded ? "表示を戻す" : "すべて表示" }
-        </Button>
+        {/* リストで表示させるコンテンツがある時だけボタンを表示 */}
+        {
+          expandedContent && (
+            <Button onClick={ handleChange } className="xl:not-even:hover:cursor-pointer">
+              { isExpanded ? "表示を戻す" : "すべて表示" }
+            </Button>
+          )
+        }
       </div>
 
       {/* リスト or CarouselContainer(スクロールコンテント) */}

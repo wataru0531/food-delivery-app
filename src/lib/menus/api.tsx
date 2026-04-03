@@ -6,6 +6,8 @@
 import { CategoryMenusType, MenuType } from "@/types";
 import { createClient } from "../supabase/server";
 
+// ジャンル(ramen_restaurant) > さまざまなカテゴリーがあり、その中に「注目の商品」、「ラーメン」などがある
+// → ここでは、ジャンルに見合ったカテゴリー並べ、そのカテゴリーに属するメニューを並べる
 
 // ✅ 店舗の種別によりメニューを取得する
 // → カテゴリーごとに分類したデータを返す
@@ -32,7 +34,7 @@ export async function fetchCategoryMenus(primaryType: string) {
 
   const categoryMenus: CategoryMenusType[] = []; // 
 
-  // ✅ primaryTypeに合致した商品の中で、注目の商品を取得 
+  // ✅ そのジャンル(ramen_restaurant)の中でも、「注目の商品」を取得 
   //    → is_featuredの値がtrueのアイテム
   const featuredItems = menus.filter(menu => menu.is_featured)
                           .map((menu): MenuType => ({
@@ -51,15 +53,18 @@ export async function fetchCategoryMenus(primaryType: string) {
   });
   // console.log("categoryMenus!!", categoryMenus)
 
-  // ✅ カテゴリーごとに分類
-  const array =  menus.map(menu => menu.category);
+  // そのramen_restaurantのメニューを取得 ... menus
+  // → ramen_restaurantの全てのカテゴリーを取得、重複を排除
+  // → カテゴリー毎に分類したオブジェクトを配列で取得
+  const array =  menus.map(menu => menu.category); // 重複した配列を取得
   // console.log(new Set(array)); // Set(3) { 'ラーメン', 'サイドメニュー', 'ドリンク' }
   const categories = Array.from(new Set(array)); // 👉 new Set ... 重複を排除して取得
                                                  //    Array.from ... 配列に戻す
   // console.log(categories); // [ 'ラーメン', 'サイドメニュー', 'ドリンク' ]
 
   for(const category of categories) {
-    const items = menus.filter(menu => menu.category === category) // カテゴリーごとのメニューを取得
+    // console.log(console.log(menus.filter(menu => menu.category === category)))
+    const items = menus.filter(menu => menu.category === category) // 取得したカテゴリーのみ取得
                       .map((menu): MenuType => ({ // データを整形
                         id: menu.id,
                         name: menu.name,
@@ -71,7 +76,7 @@ export async function fetchCategoryMenus(primaryType: string) {
     categoryMenus.push({
       id: category,
       categoryName: category,
-      items: items, //
+      items: items, // そのカテゴリーに属するメニューを取得
     })
   }
   // console.log("categoryMenus!!", categoryMenus);

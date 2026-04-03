@@ -38,7 +38,6 @@ type RestaurantPageProps = {
 }
 
 
-// 
 export default async function RestaurantPage({params, searchParams}: RestaurantPageProps){
   const { restaurantId } = await params; // urlのパラメータ(=フォルダ名の[restaurantId]の部分を取得
   const { sessionToken } = await searchParams; // クエリパラメータの値を取得

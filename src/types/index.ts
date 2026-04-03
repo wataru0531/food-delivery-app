@@ -115,7 +115,6 @@ export type LocationType = {
 }
 
 
-
 // ✅　カテゴリーごとに分類した型
 export type CategoryMenusType = {
   categoryName: string;

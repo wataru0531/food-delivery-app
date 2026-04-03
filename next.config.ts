@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
         //                → example.com/image.jpg?key=ABC&size=400
         //                  ?以降がクエリ文字列
       },
+      {
+        protocol: "https",
+        hostname: "ndpohcdojjruiosbmyxz.supabase.co", // Supabaseからの画像
+      },
     ],
   },
 };
