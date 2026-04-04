@@ -41,21 +41,22 @@ const MenuContent = ({ categoryMenus }: MenuContentProps) => {
     setActiveCategoryId(categoryId);
   }
 
-  const onChangeCallback = (inView, entry) => {
+  const onChangeCallback = (inView: boolean, entry: IntersectionObserverEntry) => {
     // console.log(entry.target.id)
-    if (!inView) return;
+    // console.log(inView); // 入ればtrue、出ればfalse
+    if(!inView) return;
 
     if (entry.intersectionRatio < 0.7) return;
 
     const element = entry.target as HTMLElement;
     const categoryId = element.id.replace("-menu", "");
-    console.log(categoryId)
+    // console.log(categoryId); // ラーメン サイドメニュー ドリンク
 
     setActiveCategoryId(categoryId);
   };
 
   return (
-    <div className="flex">
+    <div className="mt-4 flex">
       {/* サイドバー */}  
       <CategorySidebar 
         categoryMenus={ categoryMenus } 
@@ -68,6 +69,7 @@ const MenuContent = ({ categoryMenus }: MenuContentProps) => {
       <div className="w-3/4 gap-4 bg-yellow-500">
         {
           categoryMenus.map(category => (
+            // ✅ react-intersection-observerで監視
             <InView 
               key={ category.id }
               as="div" // divタグとして扱う

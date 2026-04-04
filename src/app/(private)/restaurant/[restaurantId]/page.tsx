@@ -1,6 +1,7 @@
 
 // ✅ サジェスチョンで指定した店舗の詳細ページ
 
+import MenuSearchBar from "@/components/MenuSearchBar";
 import { Button } from "@/components/ui/button"
 import MenuContent from "@/components/ui/MenuContent";
 import { fetchCategoryMenus } from "@/lib/menus/api";
@@ -11,7 +12,7 @@ import { notFound } from "next/navigation";
 
 type propsType = {
   params: Promise<{ restaurantId: string }>
-  searchParams: Promise<{sessionToken: string}>;
+  searchParams: Promise<{sessionToken: string, searchMenu: string}>;
 }
 
 // ✅ metadata
@@ -20,8 +21,9 @@ export async function generateMetadata({ params, searchParams }: propsType) {
   // console.log(params); // ReactPromise {status: 'pending', value: null, reason: null, _children: Array(0), _debugChunk: null, …}
   const { restaurantId } = await params;
   // console.log(restaurantId); // ChIJvw5w9L0FAWARmQIeaRucmeE
-  const { sessionToken } = await searchParams; 
+  const { sessionToken, searchMenu } = await searchParams; 
   // console.log(sessionToken); // d125d3ca-ccac-4289-ae30-d14a56b8f129
+  // console.log(searchMenu);
 
   const { data: restaurant } = await getPlaceDetails(restaurantId, ["displayName"], sessionToken);
   // console.log(restaurant); // {displayName: 'RAMEN KATAMUKI（ラーメン カタムキ）Chicken & Vegan noodles shop'}
@@ -34,14 +36,15 @@ export async function generateMetadata({ params, searchParams }: propsType) {
 
 type RestaurantPageProps = {
   params: Promise<{restaurantId: string}>;  // → 非同期で渡ってくるのでPromiseを指定
-  searchParams: Promise<{sessionToken: string}>;
+  searchParams: Promise<{sessionToken: string, searchMenu: string}>;
 }
 
 
 export default async function RestaurantPage({params, searchParams}: RestaurantPageProps){
   const { restaurantId } = await params; // urlのパラメータ(=フォルダ名の[restaurantId]の部分を取得
-  const { sessionToken } = await searchParams; // クエリパラメータの値を取得
+  const { sessionToken, searchMenu } = await searchParams; // クエリパラメータの値を取得
   // console.log(restaurantId, sessionToken); // ChIJjSyqgoMFAWARCxyYj8IxB54, bf4c9bac-12fd-4c4d-a0c3-155f54f8dc0d
+  // console.log(searchMenu);
 
   const { data: restaurant, error } = await getPlaceDetails(restaurantId, ["displayName","photos","primaryType"], sessionToken);
   // console.log(restaurant); // { displayName: 'ラーメン銀閣', primaryType: 'ramen_restaurant', photoUrl: 'https://places.googleapis.com/v1/places/ChIJjSyqgo…yBa8qlrcwFyauWD-CE8Uopl7FsQP0oSjvI&maxWidthPx=400'}
@@ -50,8 +53,9 @@ export default async function RestaurantPage({params, searchParams}: RestaurantP
   // console.log(p_rimaryType);
 
   // ✅ 店舗の種別(primaryType)に応じたメニューを取得
-  const { data: categoryMenus, error: menusError } = primaryType ? await fetchCategoryMenus(primaryType)
-                                                                : { data: [] };
+  const { data: categoryMenus, error: menusError }
+    = primaryType ? await fetchCategoryMenus(primaryType, searchMenu)
+                  : { data: [] };
   // console.log(categoryMenus); // (4) [{id: 'featured', categoryName: '注目商品', items: Array(8)}, {…}, {…},
 
   if(error) notFound();
@@ -84,7 +88,10 @@ export default async function RestaurantPage({params, searchParams}: RestaurantP
             <h1 className="text-3xl font-bold">{ restaurant.displayName }</h1>
           </div>
           <div className="flex-1">
-            <div className="ml-auto w-80 bg-yellow-300">検索バー</div>
+            <div className="ml-auto w-80">
+              {/* ✅ 検索バー */}
+              <MenuSearchBar restaurantId={ restaurantId } />
+            </div>
           </div>
         </div>
       </div>
