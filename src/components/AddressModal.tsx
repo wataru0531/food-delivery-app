@@ -54,7 +54,7 @@ export default function AddressModal(){
     setErrorMessage(null); // エラーメッセージの初期化
 
     try {
-      // ✅ 住所情報を取得 ルートハンドラーを発火
+      // ✅ 住所情報を取得 Route Handler
       const response = await fetch(`/api/address/autocomplete?input=${_inputText}&sessionToken=${sessionToken}`);
       // console.log(response);
 

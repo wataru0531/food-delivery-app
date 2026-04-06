@@ -9,6 +9,7 @@ import MenuCard from '../MenuCard';
 import FlatMenuCard from './FlatMenuCard';
 import { useState } from 'react';
 import { InView } from "react-intersection-observer";
+import MenuModal from '../MenuModal';
 
 type MenuContentProps = {
   categoryMenus: CategoryMenusType[];
@@ -66,7 +67,7 @@ const MenuContent = ({ categoryMenus }: MenuContentProps) => {
       />
 
       {/* メニュー */}
-      <div className="w-3/4 gap-4 bg-yellow-500">
+      <div className="w-3/4 gap-4 ">
         {
           categoryMenus.map(category => (
             // ✅ react-intersection-observerで監視
@@ -112,6 +113,10 @@ const MenuContent = ({ categoryMenus }: MenuContentProps) => {
           ))
         }
       </div>
+
+      {/* モーダル */}
+      <MenuModal />
+
     </div>
   )
 }

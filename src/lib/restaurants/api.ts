@@ -1,4 +1,7 @@
 
+// サーバー側でfetch
+
+
 // ✅ レストランに関するAPI 
 // → ⭐️ キャッシュがPOSTでは効かないので、app/api/places/route.ts に記述
 
@@ -8,9 +11,7 @@ import { createClient } from "../supabase/server";
 import { redirect } from "next/navigation";
 
 
-
 // ✅ 近くのラーメン店を取得
-
 export async function fetchRamenRestaurants(lat:number, lng: number){
   const url = "https://places.googleapis.com/v1/places:searchNearby";
   const apiKey = process.env.GOOGLE_API_KEY;

@@ -94,3 +94,29 @@ export async function fetchCategoryMenus(primaryType: string, searchMenu?: strin
   
   return { data: categoryMenus }
 }
+
+
+// ✅ 近くのラーメン店の1つ目のデータのprimaryTypeと同じデータを取得
+export async function fetchMenus(primaryType: string) {
+  // console.log(primaryType);
+
+  const supabase = await createClient();
+  const bucket = supabase.storage.from("menus"); // ストレージ領域。バケット > フォルダ名(cafeなど) > 画像
+
+  // primaryTypeと同じgenreのデータのみを取得
+  const { data: menuItems, error: menuItemsError } = await supabase
+    .from("menus").select("*").eq("genre", primaryType);
+
+  if(menuItemsError) {
+    return { error: "メニューの取得に失敗しました。" };
+  }
+
+  const menus = menuItems.map((menu): MenuType => ({ // データを整形
+                  id: menu.id,
+                  name: menu.name,
+                  price: menu.price,
+                  photoUrl: bucket.getPublicUrl(menu.image_path).data.publicUrl,
+                }));
+
+  return { data: menus };
+}

@@ -33,8 +33,6 @@ export default async function MenuSheet() {
   const { avatar_url, full_name } = user?.user_metadata;
   // console.log(avatar_url)
 
-  
-
   return (
     <Sheet>
       {/* 

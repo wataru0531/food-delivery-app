@@ -48,9 +48,8 @@ export default function PlaceSearchBar({ lat, lng }: PlaceSearchBarPropsType){
   const fetchSuggestions = useDebouncedCallback(async (_inputText: string) => {
     // try catch文でエラーを捕まえると、error.tsxではハンドリングされない。
     // また、error.tsxは、useEffectのエラーは基本的に捕まえない
-    // → useEffectはレンダリング後に実行されるため
+    // → useEffectはレンダリング後に実行されるため。error.tsxはサーバー側でレンダリングされる
     //   ⭐️ 他のAPIはレンダリングプロセス中に実行されるので、error.tsxでハンドリングさせている
-    //   onClickなども同じで、try catch文で処理する
 
     // デバウンスにより遅れてコールバックが実行されるので、文字が空であるならステートを空に
     if(!_inputText.trim()) {

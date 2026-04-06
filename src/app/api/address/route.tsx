@@ -7,11 +7,11 @@ import { AddressType } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 
 // なぜ try catch が必要か？
-// Route Handler は普通の async 関数なので、下記のような理由で try-catch を使います。
-// (1) エラーをハンドリングして、クライアントにわかりやすいレスポンスを返すため
-// try なしだと、データベースやコードで例外が発生した瞬間に 自動的に 500 エラー が返るだけで、クライアント側は詳細が分かりません。
-// try-catch を書くことで、どんなエラーかを制御して返すことができます。
-// import { NextRequest, NextResponse } from "next/server";
+// Route Handler は普通の async 関数なので、下記のような理由で try-catch を使う
+// エラーをハンドリングして、クライアントにわかりやすいレスポンスを返すため
+// try/catch文 を使わないと、データベースやコードで例外が発生した瞬間に、
+// 自動的に 500番のエラー が返るだけで、クライアント側は詳細が分からない。
+// try-catch でNext.Responseで返すことで、どんなエラーかを制御して返すことができる
 
 // サーバーコンポーネントやサーバーアクションでエラーが投げられた場合、
 // Next.js は ルート単位で自動的に error.tsx にフォールバックする。なのでtry catchはその意味で必要ない
