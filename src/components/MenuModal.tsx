@@ -14,12 +14,26 @@ import {
 import Image from "next/image";
 import { Button } from "./ui/button";
 import { DialogClose } from "@radix-ui/react-dialog";
+// import { MenuType } from "@/types";
 
-export default function MenuModal() {
+type MenuModalType = {
+  isOpen: boolean;
+  closeModal: () => void;
+}
+
+export default function MenuModal({ isOpen, closeModal }: MenuModalType) {
+  // console.log(isOpen);
+
   return (
-    <Dialog>
+    <Dialog 
+      open={ isOpen } 
+      onOpenChange={(open) => {
+        // console.log(open)
+        !open && closeModal();// モーダルの外をクリックした時に閉じる
+      }}
+      >
       <DialogTrigger>Open</DialogTrigger>
-      
+
       <DialogContent className="lg:max-w-4xl">
         <DialogHeader className="sr-only">
           <DialogTitle>{"メニュー"}</DialogTitle>

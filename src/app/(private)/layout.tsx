@@ -33,12 +33,12 @@ export default function PrivatePageLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div>
+    <>
       <Header />
       <main className="mt-16 max-w-screen-xl mx-auto px-10">
         { children }
       </main>
       <Footer />
-    </div>
+    </>
   );
 }

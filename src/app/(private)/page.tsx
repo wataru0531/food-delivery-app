@@ -3,6 +3,7 @@
 // → ログイン後の画面を入れていく
 
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import CarouselContainer from "@/components/CarouselContainer";
 import { Categories } from "@/components/Categories";
@@ -13,6 +14,7 @@ import { fetchLocation, fetchRamenRestaurants, fetchRestaurants } from "@/lib/re
 import { fetchMenus } from "@/lib/menus/api";
 import MenuList from "@/components/MenuList";
 import MenuCard from "@/components/MenuCard";
+import MenuClient from "@/components/MenuClient";
 
 // layoutと同じなら書かなくて良い。継承される。
 export const metadata: Metadata = {
@@ -97,18 +99,12 @@ export default async function Home() {
       {
         !menus ? (
           <p>{ menusError }</p>
-        ) : menus.length > 0 ? (
+        ) : menus.length > 0 && restaurant ? (
           <Section 
-            title={ restaurant?.restaurantName + "(ラーメン店配列の最初のお店のメニュー)" }
-            expandedContent={<MenuList menus={ menus } />}
+            title={ restaurant.restaurantName + "(ラーメン店配列の最初のお店のメニュー)" }
+            expandedContent={<MenuList menus={ menus } restaurantId={ restaurant.id } />} // リスト表示用コンポーネント
           >
-            <CarouselContainer slideToShow={6}>
-                {
-                  menus.map((menu) => (
-                    <MenuCard key={ menu.id } menu={ menu } />
-                  ))
-                }
-              </CarouselContainer>
+            <MenuClient menus={ menus } restaurantId={ restaurant.id }/>
           </Section>
         ) : (
           <p>メニューがありません</p>
