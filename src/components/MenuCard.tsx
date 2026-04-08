@@ -6,9 +6,7 @@
 "use client"
 
 import Image from "next/image";
-
 import { MenuType } from "@/types";
-
 
 type MenuCardProps = {
   menu: MenuType;

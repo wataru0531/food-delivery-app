@@ -13,7 +13,6 @@ import Section from "@/components/Section";
 import { fetchLocation, fetchRamenRestaurants, fetchRestaurants } from "@/lib/restaurants/api";
 import { fetchMenus } from "@/lib/menus/api";
 import MenuList from "@/components/MenuList";
-import MenuCard from "@/components/MenuCard";
 import MenuClient from "@/components/MenuClient";
 
 // layoutと同じなら書かなくて良い。継承される。

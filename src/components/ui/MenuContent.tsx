@@ -13,9 +13,10 @@ import { useModal } from "@/app/context/modalContext";
 
 type MenuContentProps = {
   categoryMenus: CategoryMenusType[];
+  restaurantId: string;
 };
 
-const MenuContent = ({ categoryMenus }: MenuContentProps) => {
+const MenuContent = ({ categoryMenus, restaurantId }: MenuContentProps) => {
   // console.log(categoryMenus);
   // (4) [0: {id: 'featured', categoryName: '注目商品', items: Array(8)}, {id: 56, name: '醤油ラーメン', price: 800, photoUrl: 'https://ndpohcdojjruiosbmyxz.supabase.co/storage/v1/object/public/menus/ramen/shoyu-ramen.webp'}, {…}, {…}]
 
@@ -79,17 +80,17 @@ const MenuContent = ({ categoryMenus }: MenuContentProps) => {
             as="div" // divタグとして扱う
             className="scroll-mt-16"
             id={`${category.id}-menu`}
-            onChange={onChangeCallback}
+            onChange={ onChangeCallback }
             threshold={0.7} // 要素がどれくらい“画面内に入ったか”の割合。70%
           >
             {/* scroll-mt-16 → スクロール時だけ影響する */}
             <div>
-              <Section title={category.categoryName}>
+              <Section title={ category.categoryName }>
                 {/* 
                     注目の商品 → スクロールできるコンテンツとして表示。idがfeatured
                     その他はリストで表示
                   */}
-                {category.id === "featured" ? (
+                { category.id === "featured" ? (
                   // ✅ スライダー
                   <CarouselContainer slideToShow={4}>
                     {category.items.map((menu) => (
@@ -119,7 +120,12 @@ const MenuContent = ({ categoryMenus }: MenuContentProps) => {
       </div>
 
       {/* モーダル */}
-      <MenuModal isOpen={isOpen} closeModal={closeModal} />
+      <MenuModal 
+        isOpen={ isOpen } 
+        closeModal={ closeModal }
+        selectedItem={ selectedItem }
+        restaurantId={ restaurantId }
+      />
     </div>
   );
 };
