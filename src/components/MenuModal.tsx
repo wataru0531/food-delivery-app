@@ -34,7 +34,7 @@ export default function MenuModal({ isOpen, closeModal, selectedItem, restaurant
   // ✅ 商品の数量
   const [ quantity, setQuantity ] = useState(1);
   const onChangeSetQuantity = (e:React.ChangeEvent<HTMLSelectElement, HTMLSelectElement>) => {
-    // console.log(e.target.value, typeof e.target.value);
+    // console.log(e.target.value, typeof e.target.value); // string
     setQuantity(Number(e.target.value));
   }
 

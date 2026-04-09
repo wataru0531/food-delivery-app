@@ -44,6 +44,66 @@ export type Database = {
         }
         Relationships: []
       }
+      cart_items: {
+        Row: {
+          cart_id: number
+          created_at: string
+          id: number
+          menu_id: number
+          quantity: number
+        }
+        Insert: {
+          cart_id: number
+          created_at?: string
+          id?: number
+          menu_id: number
+          quantity: number
+        }
+        Update: {
+          cart_id?: number
+          created_at?: string
+          id?: number
+          menu_id?: number
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_cart_id_fkey"
+            columns: ["cart_id"]
+            isOneToOne: false
+            referencedRelation: "carts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cart_items_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      carts: {
+        Row: {
+          created_at: string
+          id: number
+          restaurant_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          restaurant_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          restaurant_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       menus: {
         Row: {
           category: string

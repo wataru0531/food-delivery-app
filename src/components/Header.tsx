@@ -8,6 +8,7 @@ import MenuSheet from "./MenuSheet";
 import PlaceSearchBar from "./PlaceSearchBar";
 import AddressModal from "./AddressModal";
 import { fetchLocation } from "@/lib/restaurants/api";
+import Cart from "./Cart";
 
 
 export default async function Header(){
@@ -29,7 +30,8 @@ export default async function Header(){
           <PlaceSearchBar lat={lat} lng={lng}  />
         </div>
 
-        <div>カート</div>
+        {/* ka-to */}
+        <Cart />
       </div>
     </header>
   )
