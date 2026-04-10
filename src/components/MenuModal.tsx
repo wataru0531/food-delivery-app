@@ -27,6 +27,7 @@ type MenuModalType = {
   restaurantId: string;
 }
 
+
 export default function MenuModal({ isOpen, closeModal, selectedItem, restaurantId }: MenuModalType) {
   // console.log(isOpen);
   // console.log(selectedItem); // {id: 20, name: '牛丼', price: 600, photoUrl: 'https://ndpohcdojjruiosbmyxz.supabase.co/storage/v1/object/public/menus/japanese/gyudon.webp'}

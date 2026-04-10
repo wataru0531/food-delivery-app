@@ -129,3 +129,24 @@ export type MenuType = {
   photoUrl: string;
   price: number;
 }
+
+
+// ✅ カートのアイテムの型
+export type CartItemType = {
+  id: number;
+  quantity: number;
+  menus: {
+    id: number;
+    name: string;
+    price: number;
+    image_path: string;
+  }
+}
+
+// ✅ 
+export type CartType = {
+  restaurantName: string | undefined;
+  photoUrl: string | undefined;
+  id: number;
+  cart_items: CartItemType[];
+}

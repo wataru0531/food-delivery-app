@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   if(!input) { // フロント側でもエラー対処はしているが、バックエンドでも対処
     return NextResponse.json({ error: "文字を入力してください" }, { status: 400 });
   }
-
+  
   if(!sessionToken) {
     return NextResponse.json({ error: "セッショントークンは必須です。" }, { status: 400 });
   }
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(results);
   } catch(error) { 
     console.error(error);
-    return NextResponse.json({ error: "予期せぬエラーが発生しました。" });
+    return NextResponse.json({ error: "予期せぬエラーが発生しました。" }, { status: 500 });
   }
 }
 

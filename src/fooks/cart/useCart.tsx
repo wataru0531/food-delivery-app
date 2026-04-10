@@ -2,6 +2,7 @@
 
 // カートに関するカスタムフック
 
+import { CartType } from "@/types";
 import useSWR from "swr";
 
 const fetcher = async (url: string) => {
@@ -16,14 +17,14 @@ const fetcher = async (url: string) => {
   return data;
 }
 
-
+// 
 export function useCart(){
   const {
     data: carts,
     error: cartsError,
     isLoading,
     mutate: mutateCart,
-  } = useSWR(`/api/cart`, fetcher);
+  } = useSWR<CartType[]>(`/api/cart`, fetcher); // Route Handler
 
   return { carts, cartsError, isLoading, mutateCart }
 }
