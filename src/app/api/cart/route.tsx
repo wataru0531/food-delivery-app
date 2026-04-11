@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 
     const results = await Promise.all(promises);
 
-    return NextResponse.json({ results });
+    return NextResponse.json(results);
   } catch(error) {
     console.error("予期せぬエラーが起きました。", error);
     return NextResponse.json({ error: "予期せぬエラーが起きました。" }, { status: 500 });
