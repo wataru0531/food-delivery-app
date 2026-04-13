@@ -139,7 +139,8 @@ export type CartItemType = {
     id: number;
     name: string;
     price: number;
-    image_path: string;
+    // image_path: string;
+    photoUrl: string;
   }
 }
 
@@ -148,5 +149,6 @@ export type CartType = {
   restaurantName: string | undefined;
   photoUrl: string | undefined;
   id: number;
+  restaurant_id: string;
   cart_items: CartItemType[];
 }

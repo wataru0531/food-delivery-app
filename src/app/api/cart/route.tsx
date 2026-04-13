@@ -13,6 +13,8 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
+    const bucket = supabase.storage.from("menus"); // 👉 Supabaseのストレージ名を取得
+
     if(userError || !user) {
       return NextResponse.json({ error: "ユーザーが認証されていません。" }, { status: 401 });
     }
@@ -51,6 +53,20 @@ export async function GET(request: NextRequest) {
 
       return { // Promiseオブジェクトで返る
         ...cart,
+        cart_items: cart.cart_items.map(item => {
+          const { image_path, ...restMenus } = item.menus; // 👉 ...を使うことで残りのプロパティを受け取れる
+                                                          //     image_pathを除くことができる 
+          const publicUrl = bucket.getPublicUrl(image_path).data.publicUrl;
+
+          return {
+            ...item,
+            menus: {
+              ...restMenus,
+              photoUrl: publicUrl,
+            }
+          }
+        }),
+        // → cart_itemsは、中のmenusのimage_pathをurlに編集して渡す
         restaurantName: restaurantData?.displayName,
         photoUrl: restaurantData?.photoUrl,
       }
