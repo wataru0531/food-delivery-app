@@ -24,9 +24,11 @@ export default function Cart(){
 
   return displayMode === "cartSheet" ? (
     // ✅ カートが0件、または、1件の時 → スライド
+    // → 1つの店舗でも買い物をしていない時、または、1つの店舗でしか買い物をしていない時
     <CartSheet sheetCart={ sheetCart } cartCount={ cartCount } />
   ) : (
     // ✅ カートが2件以上の時 → ドロップダウン
-    <CartDropDown />
+    // → 2つ以上の店舗で買い物をした時
+    <CartDropDown carts={ carts } />
   )
 }

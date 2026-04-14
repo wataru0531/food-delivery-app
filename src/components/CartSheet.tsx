@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/tooltip"
 import { ShoppingCart, Trash2 } from "lucide-react";
 
-import { CartType } from "@/types";
+import { CartItemType, CartType } from "@/types";
 import { Button } from "./ui/button";
 import Link from "next/link";
 
@@ -38,6 +38,24 @@ type CartSheetPropsType = {
 export default function CartSheet({ sheetCart, cartCount }: CartSheetPropsType){
   // console.log(sheetCart); // { id: 5, restaurant_id: 'ChIJM88kepPfAGARiEXZJTN_Jc8', cart_items: Array(1), restaurantName: 'ハルハル', photoUrl: '/no-image.jpeg' }
   // console.log(cartCount); // 3 ... アイテムの数
+
+  // ✅　カートのアイテムの合計金額を計算
+  const calculateItemTotal = (item: CartItemType) => {
+    // console.log(item);
+    // {id: 10, restaurant_id: 'ChIJZZPMQQDfAGARxEZtPATdWew', cart_items: [ {id: 19, menus: {id: 56, name: '醤油ラーメン', price: 800, photoUrl: 'https://ndpohcdojjruiosbmyxz.supabase.co/storage/v1/object/public/menus/ramen/shoyu-ramen.webp'}, quantity: 3}], restaurantName: 'RAMEN JUNKEYZ', photoUrl: '/no-image.jpeg'}
+    return item.quantity * item.menus.price;
+  }
+
+  // ✅ カートアイテムの合計金額を算出
+  const calculateSubTotal = (cartItem: CartItemType[]) => {
+    // console.log(items); // (3) [{id: 19, menus: {id: 56, name: '醤油ラーメン', price: 800, photoUrl: 'https://ndpohcdojjruiosbmyxz.supabase.co/storage/v1/object/public/menus/ramen/shoyu-ramen.webp'}, quantity: 3}, {…}, {…}]
+
+    return cartItem.reduce((accu, curr) => {
+      // console.log(accu, curr)
+      return accu + calculateItemTotal(curr);
+    }, 0)
+
+  }
 
   return (
     <Sheet>
@@ -66,6 +84,7 @@ export default function CartSheet({ sheetCart, cartCount }: CartSheetPropsType){
         {
           sheetCart ? (
             <>
+              {/* ヘッダー */}
               <div className="flex justify-between items-center gap-4">
                 <Link 
                   href={`/restaurant/${sheetCart.restaurant_id}`}
@@ -89,6 +108,8 @@ export default function CartSheet({ sheetCart, cartCount }: CartSheetPropsType){
                   </TooltipProvider>
                 </div>
               </div>
+
+              {/* メニューエリア */}
               <ul className="flex-1 overflow-y-auto">
                 {/*
                   1つのアイテム
@@ -132,14 +153,30 @@ export default function CartSheet({ sheetCart, cartCount }: CartSheetPropsType){
                           <option value="4">4</option>
                           <option value="5">5</option>
                         </select>
-                        <p>￥{ item.menus.price }</p>
+                        {/* 合計金額 */}
+                        <p>￥{ calculateItemTotal(item).toLocaleString() }</p>
                       </div>
                     </li>
                   ))
                 }
-                
-                
               </ul>
+
+              {/* 小計など */}
+              <div className="flex justify-between items-center font-bold text-lg">
+                <div>小計</div>
+                <div>{ calculateSubTotal(sheetCart.cart_items).toLocaleString() }</div>
+              </div>
+              
+              {/*
+                asChild ... ラッパーを作らずに、中のButtonをそのまま使う
+                            ここでは、ラッパーを作らずにaタグがトップにきている
+                            Buttonの機能やデザインを継承してaタグとして機能する
+              */}
+              <SheetClose asChild>
+                <Button asChild>
+                  <Link href={`/checkout/${sheetCart.restaurant_id}`}>お会計に進む</Link>
+                </Button>
+              </SheetClose>
 
             </>
           ) : (

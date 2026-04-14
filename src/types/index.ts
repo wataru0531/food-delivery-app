@@ -130,7 +130,6 @@ export type MenuType = {
   price: number;
 }
 
-
 // ✅ カートのアイテムの型
 export type CartItemType = {
   id: number;
