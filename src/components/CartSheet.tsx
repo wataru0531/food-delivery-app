@@ -47,10 +47,10 @@ export default function CartSheet({ sheetCart, cartCount }: CartSheetPropsType){
   }
 
   // ✅ カートアイテムの合計金額を算出
-  const calculateSubTotal = (cartItem: CartItemType[]) => {
+  const calculateSubTotal = (cartItems: CartItemType[]) => {
     // console.log(items); // (3) [{id: 19, menus: {id: 56, name: '醤油ラーメン', price: 800, photoUrl: 'https://ndpohcdojjruiosbmyxz.supabase.co/storage/v1/object/public/menus/ramen/shoyu-ramen.webp'}, quantity: 3}, {…}, {…}]
 
-    return cartItem.reduce((accu, curr) => {
+    return cartItems.reduce((accu, curr) => {
       // console.log(accu, curr)
       return accu + calculateItemTotal(curr);
     }, 0)

@@ -30,7 +30,7 @@ export default async function Header(){
           <PlaceSearchBar lat={lat} lng={lng}  />
         </div>
 
-        {/* ka-to */}
+        {/* カート */}
         <Cart />
       </div>
     </header>

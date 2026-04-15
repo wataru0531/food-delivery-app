@@ -19,7 +19,10 @@ function sumItems(cart: CartType) {
 }
 
 // ✅　表示を切り替える処理
-export function computeCartDisplayLogic(carts: CartType[] | undefined) {
+export function computeCartDisplayLogic(
+  carts: CartType[] | undefined, 
+  selectedCart: CartType | null) 
+{
   // console.log(carts);
   // console.log(carts.length)
   // カートには何も入っていない場合
@@ -35,6 +38,17 @@ export function computeCartDisplayLogic(carts: CartType[] | undefined) {
     // console.log(sumItems(only));
     return { displayMode: "cartSheet", sheetCart: only, cartCount: sumItems(only) }
   }
+
+  // ✅　選択されたカートがある場合 → 複数の店舗で買い物をしてドロップダウンの店舗をクリックした時
+  if(selectedCart) {
+    return {
+      displayMode: "cartSheet", // シートで表示
+      sheetCart: selectedCart, // 表示したいデータ
+      cartCount: sumItems(selectedCart), // 合計数
+    }
+    
+  }
+
 
   // カートに2つ以上のお店
   return { displayMode: "cartDropDown", sheetCart: null, cartCount: 0 };
