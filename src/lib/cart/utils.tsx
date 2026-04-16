@@ -21,13 +21,14 @@ function sumItems(cart: CartType) {
 // ✅　表示を切り替える処理
 export function computeCartDisplayLogic(
   carts: CartType[] | undefined, 
-  selectedCart: CartType | null) 
-{
+  selectedCart: CartType | null,
+  targetCart: CartType | null,
+){
   // console.log(carts);
   // console.log(carts.length)
   // カートには何も入っていない場合
   if(!carts || carts.length === 0) {
-    // ①カートの種類 ②店舗データや入れたアイテムのデータ ③カートのアイテムの合計(quantity)
+    // ①カートの種類 ②店舗のデータ ③カートのアイテムの合計(quantity)
     return { displayMode: "cartSheet", sheetCart: null, cartCount: 0 }
   }
 
@@ -43,10 +44,19 @@ export function computeCartDisplayLogic(
   if(selectedCart) {
     return {
       displayMode: "cartSheet", // シートで表示
-      sheetCart: selectedCart, // 表示したいデータ
+      sheetCart: selectedCart, // 表示したい店舗のデータ
       cartCount: sumItems(selectedCart), // 合計数
     }
-    
+  }
+
+  // ✅ ターゲットカートがある場合
+  // → 店舗ページに行った時に、その店舗に紐づくカートのアイテムを表示
+  if(targetCart) {
+    return {
+      displayMode: "cartSheet",
+      sheetCart: targetCart,
+      cartCount: sumItems(targetCart)
+    }
   }
 
 

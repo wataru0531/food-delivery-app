@@ -21,9 +21,11 @@ import { SetStateAction } from "react";
 type CartDropDownType = {
   carts: CartType[]; // 👉 useSWRでデータを取得するまではundefinedになるため
   setSelectedCart: React.Dispatch<SetStateAction<CartType | null>>;
+  openCart: () => void;
 }
 
-export default function CartDropDown({ carts, setSelectedCart }: CartDropDownType) {
+
+export default function CartDropDown({ carts, setSelectedCart, openCart }: CartDropDownType) {
   // console.log(carts); 
   // [{id: 10, restaurant_id: 'ChIJZZPMQQDfAGARxEZtPATdWew', cart_items: [{id: 19, menus: {id: 56, name: '醤油ラーメン', price: 800, photoUrl: 'https://ndpohcdojjruiosbmyxz.supabase.co/storage/v1/object/public/menus/ramen/shoyu-ramen.webp'}, quantity: 3}, {}, ...], restaurantName: 'RAMEN JUNKEYZ', photoUrl: '/no-image.jpeg'}, {}, ...]
 
@@ -54,7 +56,6 @@ export default function CartDropDown({ carts, setSelectedCart }: CartDropDownTyp
 
   return (
     <DropdownMenu>
-
       {/* 開くためにトリガー */}
       <DropdownMenuTrigger className="relative cursor-pointer">
         <ShoppingCart />
@@ -62,14 +63,16 @@ export default function CartDropDown({ carts, setSelectedCart }: CartDropDownTyp
           { carts.length }
         </span>
       </DropdownMenuTrigger>
-
       <DropdownMenuContent className="w-[420px]">
         {
           carts && carts.map((cart) => (
             <DropdownMenuItem 
               key={cart.id} 
               className="flex items-center p-4 justify-between"
-              onClick={ () => setSelectedCart(cart) }
+              onClick={ () => {
+                setSelectedCart(cart);
+                openCart(); // リストをtrueにする
+              }}
             >
               <div className="flex gap-3 flex-1 min-w-0">
                 <div className="w-[64px] h-[64px] relative overflow-hidden rounded-full flex-none">
@@ -88,8 +91,8 @@ export default function CartDropDown({ carts, setSelectedCart }: CartDropDownTyp
               <div className="flex items-center justify-center size-7 font-medium rounded-full bg-primary text-popover text-xs">
                 { calculateTotalQuantity(cart.cart_items) }
               </div>
-          </DropdownMenuItem>
-        ))
+            </DropdownMenuItem>
+          ))
         }
         <DropdownMenuSeparator />
       </DropdownMenuContent>

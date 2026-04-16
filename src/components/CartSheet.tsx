@@ -24,6 +24,7 @@ import { ShoppingCart, Trash2 } from "lucide-react";
 import { CartItemType, CartType } from "@/types";
 import { Button } from "./ui/button";
 import Link from "next/link";
+import { SetStateAction } from "react";
 
 
 // ✅ カートでシートで表示
@@ -32,10 +33,19 @@ import Link from "next/link";
 type CartSheetPropsType = {
   sheetCart: CartType | null; // カートはそもそも存在しないためnull
   cartCount: number;
+  isOpen: boolean;
+  openCart: () => void;
+  closeCart: () => void;
 }
 
 
-export default function CartSheet({ sheetCart, cartCount }: CartSheetPropsType){
+export default function CartSheet({ 
+  sheetCart, 
+  cartCount, 
+  isOpen, 
+  closeCart, 
+  openCart,
+}: CartSheetPropsType){
   // console.log(sheetCart); // { id: 5, restaurant_id: 'ChIJM88kepPfAGARiEXZJTN_Jc8', cart_items: Array(1), restaurantName: 'ハルハル', photoUrl: '/no-image.jpeg' }
   // console.log(cartCount); // 3 ... アイテムの数
 
@@ -54,11 +64,13 @@ export default function CartSheet({ sheetCart, cartCount }: CartSheetPropsType){
       // console.log(accu, curr)
       return accu + calculateItemTotal(curr);
     }, 0)
-
   }
 
   return (
-    <Sheet>
+    <Sheet 
+      open={ isOpen } // openがtrueなら開く
+      onOpenChange={ (open) => open ? openCart() : closeCart() } // リストの状態を変更(罰印、黒レイヤーをクリック時)
+    > 
       <SheetTrigger className="relative cursor-pointer">
         {/* アイコン */}
         <ShoppingCart />
@@ -86,12 +98,15 @@ export default function CartSheet({ sheetCart, cartCount }: CartSheetPropsType){
             <>
               {/* ヘッダー */}
               <div className="flex justify-between items-center gap-4">
-                <Link 
-                  href={`/restaurant/${sheetCart.restaurant_id}`}
-                  className="font-bold text-2xl"
-                >
-                  { sheetCart.restaurantName }
-                </Link>
+                <SheetClose asChild>
+                  <Link 
+                    href={`/restaurant/${sheetCart.restaurant_id}`}
+                    className="font-bold text-2xl"
+                    // onClick={ () => closeCart() }
+                  >
+                    { sheetCart.restaurantName }
+                  </Link>
+                </SheetClose>
                 <div>
                   {/* ホバー時の挙動 */}
                   <TooltipProvider>

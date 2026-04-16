@@ -16,8 +16,8 @@ const fetcher = async (url: string) => {
   return data;
 }
 
-// 
-export function useCart(){
+// ✅ 
+export function useCart(restaurantId?: string){
   const {
     data: carts,
     error: cartsError,
@@ -25,6 +25,13 @@ export function useCart(){
     mutate: mutateCart,
   } = useSWR<CartType[]>(`/api/cart`, fetcher); // Route Handler
 
-  return { carts, cartsError, isLoading, mutateCart }
+  // 全てのカートの中から、今開いている店舗のデータを取得
+  // カートをもっていない店舗ページもあるので、nullを返す
+  const targetCart = restaurantId ? carts?.find((cart) => cart.restaurant_id === restaurantId) ?? null
+                                  : null;
+  // console.log(targetCart);
+  // {id: 10, restaurant_id: 'ChIJZZPMQQDfAGARxEZtPATdWew', cart_items: Array(3), restaurantName: 'RAMEN JUNKEYZ', photoUrl: '/no-image.jpeg'}
+
+  return { carts, cartsError, isLoading, mutateCart, targetCart }
 }
 
