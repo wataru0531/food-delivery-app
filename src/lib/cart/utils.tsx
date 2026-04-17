@@ -58,8 +58,7 @@ export function computeCartDisplayLogic(
       cartCount: sumItems(targetCart)
     }
   }
-
-
+  
   // カートに2つ以上のお店
   return { displayMode: "cartDropDown", sheetCart: null, cartCount: 0 };
 

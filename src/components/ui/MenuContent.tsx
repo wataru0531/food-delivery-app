@@ -1,3 +1,4 @@
+
 "use client";
 
 import { CategoryMenusType } from "@/types";
@@ -10,17 +11,26 @@ import { useState } from "react";
 import { InView } from "react-intersection-observer";
 import MenuModal from "../MenuModal";
 import { useModal } from "@/app/context/modalContext";
+import { useCartVisibility } from "@/app/context/cartContext";
+import { useCart } from "@/fooks/cart/useCart";
 
 type MenuContentProps = {
   categoryMenus: CategoryMenusType[];
   restaurantId: string;
 };
 
+
 const MenuContent = ({ categoryMenus, restaurantId }: MenuContentProps) => {
   // console.log(categoryMenus);
   // (4) [0: {id: 'featured', categoryName: '注目商品', items: Array(8)}, {id: 56, name: '醤油ラーメン', price: 800, photoUrl: 'https://ndpohcdojjruiosbmyxz.supabase.co/storage/v1/object/public/menus/ramen/shoyu-ramen.webp'}, {…}, {…}]
 
-  const { isOpen, setIsOpen, openModal, closeModal, selectedItem } = useModal();
+  const { isOpen, openModal, closeModal, selectedItem } = useModal();
+  const { openCart } = useCartVisibility(); // カートシートの開閉状態を管理
+
+  // ✅ その店舗のカートのデータを取得
+  // targetCart → 現在のページのカートのデータ
+  const { targetCart } = useCart(restaurantId);
+  // console.log(targetCart); // {id: 10, restaurant_id: 'ChIJZZPMQQDfAGARxEZtPATdWew', cart_items: Array(4), restaurantName: 'RAMEN JUNKEYZ', photoUrl: '/no-image.jpeg'}
 
   // どのカテゴリのidを選択しているか
   const [activeCategoryId, setActiveCategoryId] = useState(categoryMenus[0].id);
@@ -125,6 +135,8 @@ const MenuContent = ({ categoryMenus, restaurantId }: MenuContentProps) => {
         closeModal={ closeModal }
         selectedItem={ selectedItem }
         restaurantId={ restaurantId }
+        openCart={ openCart }
+        targetCart={ targetCart }
       />
     </div>
   );

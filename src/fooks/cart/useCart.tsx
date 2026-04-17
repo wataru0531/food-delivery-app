@@ -16,7 +16,8 @@ const fetcher = async (url: string) => {
   return data;
 }
 
-// ✅ 
+
+// ✅ カートの中のデータを取得。
 export function useCart(restaurantId?: string){
   const {
     data: carts,
@@ -25,7 +26,7 @@ export function useCart(restaurantId?: string){
     mutate: mutateCart,
   } = useSWR<CartType[]>(`/api/cart`, fetcher); // Route Handler
 
-  // 全てのカートの中から、今開いている店舗のデータを取得
+  // ✅ 全てのカートの中から、今開いている店舗のデータを取得
   // カートをもっていない店舗ページもあるので、nullを返す
   const targetCart = restaurantId ? carts?.find((cart) => cart.restaurant_id === restaurantId) ?? null
                                   : null;
@@ -34,4 +35,3 @@ export function useCart(restaurantId?: string){
 
   return { carts, cartsError, isLoading, mutateCart, targetCart }
 }
-

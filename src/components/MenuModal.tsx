@@ -15,8 +15,8 @@ import {
 import Image from "next/image";
 import { Button } from "./ui/button";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { MenuType } from "@/types";
-import { useState } from "react";
+import { CartType, MenuType } from "@/types";
+import { useEffect, useState } from "react";
 import { addToCartAction } from "@/app/(private)/actions/cartActions";
 // import { MenuType } from "@/types";
 
@@ -25,19 +25,47 @@ type MenuModalType = {
   closeModal: () => void;
   selectedItem: MenuType | null;
   restaurantId: string;
+  openCart: () => void;
+  targetCart: CartType | null; // 現在選択中の店舗データを取得
 }
 
 
-export default function MenuModal({ isOpen, closeModal, selectedItem, restaurantId }: MenuModalType) {
+export default function MenuModal({ 
+  isOpen, 
+  closeModal, 
+  selectedItem, 
+  restaurantId, 
+  openCart, 
+  targetCart 
+}: MenuModalType) {
   // console.log(isOpen);
   // console.log(selectedItem); // {id: 20, name: '牛丼', price: 600, photoUrl: 'https://ndpohcdojjruiosbmyxz.supabase.co/storage/v1/object/public/menus/japanese/gyudon.webp'}
+  // console.log(targetCart); // {id: 10, restaurant_id: 'ChIJZZPMQQDfAGARxEZtPATdWew', cart_items: Array(4), restaurantName: 'RAMEN JUNKEYZ', photoUrl: '/no-image.jpeg'}
 
   // ✅ 商品の数量
   const [ quantity, setQuantity ] = useState(1);
   const onChangeSetQuantity = (e:React.ChangeEvent<HTMLSelectElement, HTMLSelectElement>) => {
     // console.log(e.target.value, typeof e.target.value); // string
-    setQuantity(Number(e.target.value));
+    setQuantity(Number(e.target.value)); 
   }
+
+  // ✅ 現在選択中の店舗のメニューのデータを取得
+  const foundItem = targetCart ? targetCart?.cart_items.find(item => {
+    // 全ての店舗の商品と、現在選択中の商品とを検証して取得
+    return item.menus.id === selectedItem?.id;
+  }) : null;
+
+  const existingCartItem = foundItem ?? null; // undefinedを返す時もあるので
+  // console.log(existingCartItem); // {id: 20, menus: {…}, quantity: 1} もしくは、null
+
+  useEffect(() => {
+    if(!selectedItem) return;
+
+    setQuantity(existingCartItem?.quantity ?? 1); // 数量を更新
+
+  }, [ selectedItem, existingCartItem ]); // アイテムを選択するたびに発火。
+                                          // useEffect内の変数は依存配列に含める
+
 
   // ✅ カートに商品を追加する処理 サーバーアクション
   const handleAddToCard = async () => {
@@ -48,6 +76,8 @@ export default function MenuModal({ isOpen, closeModal, selectedItem, restaurant
       // ⭐️ サーバーアクション.テーブルにテーブルに追加。商品、量、店舗のid
       await addToCartAction(selectedItem, quantity, restaurantId);
 
+      openCart(); // カートシートを開く
+      closeModal(); // モーダルを閉じる
     } catch(error) {
       console.error(error);
       alert("エラーが発生しました。");
@@ -110,7 +140,7 @@ export default function MenuModal({ isOpen, closeModal, selectedItem, restaurant
                       <option value="2">2</option>
                       <option value="3">3</option>
                       <option value="4">4</option>
-                      <option value="5">5</option>
+                      <option value="5">5</option> 
                     </select>
                   </div>
 
@@ -121,7 +151,10 @@ export default function MenuModal({ isOpen, closeModal, selectedItem, restaurant
                       className="mt-6 h-14 text-lg font-semibold"
                       onClick={ handleAddToCard }
                     >
-                      商品を追加（￥{ selectedItem.price * quantity }）
+                      { 
+                        existingCartItem ? "商品を更新する" 
+                                         : `商品を追加（￥${ selectedItem.price * quantity })`
+                      }
                     </Button>
                   </DialogClose>
                 </div>
