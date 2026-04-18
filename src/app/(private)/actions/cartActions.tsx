@@ -83,7 +83,83 @@ export async function addToCartAction(
     console.error("カートアイテムの追加・更新に失敗しました。");
     throw new Error("カートの取得に失敗しました。");
   }
+}
 
+// ✅ カートシートの時、select要素の数量を更新
+export async function updateCartItemAction(
+  quantity :number, // 数量
+  cartItemId: number, // アイテム自体のid
+  cartId: number // カート(店舗)のid
+){
+  // console.log(quantity, cartItemId, cartId); // 2 20 10
 
+  const supabase = await createClient();
+  const { 
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if(userError || !user) {
+    redirect("/login");
+  }
+
+  // ✅ 削除の時の処理
+  if(quantity === 0) { // 削除の時は0が渡ってくる
+    // ✅ データなどは取得せず、件数のみ取得する
+    const { count, error } = await supabase
+      .from("cart_items")
+      .select("*", { 
+        count: "exact", // 厳密な
+        head: true, // 
+      }).eq("cart_id", cartId); 
+      // → 今開いているカート(店舗)のidと一致するアイテムのcart_idを対象とする
+
+    if(error) {
+      console.error("カートの件数の取得に失敗しました。", error);
+      throw new Error("カートの件数の取得に失敗しました。");
+      // → console.errorはサーバー側で出力
+      //   throwはフロント側でcatchされる
+    }
+
+    // ✅ アイテムが残り1つの時 → カート自体を削除
+    if(count === 1) {
+      const { error: deleteCartError } = await supabase
+        .from("carts")
+        .delete()
+        .match({ user_id: user.id, id: cartId }); 
+        // → ログインユーザー、カートのid
+
+        if(deleteCartError) {
+          console.error("カートの削除に失敗しました。", deleteCartError);
+          throw new Error("カートの削除に失敗しました。");
+        }
+        return;
+    }
+
+    // ✅ カートの中にアイテムが複数の場合 → カート(店舗)の中のアイテム自体を削除するだけ
+    const { error: deleteItemError } = await supabase
+      .from("cart_items")
+      .delete()
+      .eq("id", cartItemId);
+
+    if(deleteItemError) {
+      console.error("カートアイテムの削除に失敗しました。", deleteItemError);
+      throw new Error("カートの削除に失敗しました。")
+    }
+    return;
+  }
+
+  // ✅ 数量を更新する処理
+  const { error: updateError } = await supabase
+    .from("cart_items")
+    .update({
+      quantity: quantity,
+    })
+    .eq("id", cartItemId); // カートアイテムのidと、選択したカートのアイテムのidが一致するアイテム
+  
+  if(updateError) {
+    console.error("カートアイテムの更新に失敗しました。", updateError);
+    throw new Error("カートアイテムの更新に失敗しました。");
+  }
 
 }

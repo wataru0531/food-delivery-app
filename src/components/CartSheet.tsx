@@ -24,11 +24,8 @@ import { ShoppingCart, Trash2 } from "lucide-react";
 import { CartItemType, CartType } from "@/types";
 import { Button } from "./ui/button";
 import Link from "next/link";
-import { SetStateAction } from "react";
+import { updateCartItemAction } from "@/app/(private)/actions/cartActions";
 
-
-// ✅ カートでシートで表示
-//    → カートには何も入っていない場合、1件の時に表示
 
 type CartSheetPropsType = {
   sheetCart: CartType | null; // カートはそもそも存在しないためnull
@@ -64,6 +61,27 @@ export default function CartSheet({
       // console.log(accu, curr)
       return accu + calculateItemTotal(curr);
     }, 0)
+  }
+
+  // ✅ 数量を更新する処理
+  // ①要素 ②そのアイテムのid
+  const handleUpdateCurtItem = async (value: string, cartItemId: number) => {
+    // console.log(value, cartItemId); // セレクト要素の番号 19
+
+    if(!sheetCart) return; // nullの可能性を排除
+
+    const quantity = Number(value); // selectの数を数値型に変換
+
+    try {
+       // 更新。サーバーアクション
+      const data = await updateCartItemAction(quantity, cartItemId, sheetCart.id); // 数量、アイテムのid、どのカート(店舗)か
+      // console.log(data);
+
+    } catch(error) {
+      console.error(error);
+      alert("エラーが発生しました。");
+    }
+
   }
 
   return (
@@ -159,7 +177,7 @@ export default function CartSheet({
                           id="quantity" 
                           className="border rounded-full pr-8 pl04 bg-muted h-9"
                           value={item.quantity}
-                          onChange={() => {}}
+                          onChange={ (e:React.ChangeEvent<HTMLSelectElement, HTMLSelectElement>) => handleUpdateCurtItem(e.target.value, item.id) }
                         >
                           <option value="0">削除する</option>
                           <option value="1">1</option>
