@@ -25,6 +25,7 @@ import { CartItemType, CartType } from "@/types";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { updateCartItemAction } from "@/app/(private)/actions/cartActions";
+import { KeyedMutator } from "swr";
 
 
 type CartSheetPropsType = {
@@ -33,6 +34,7 @@ type CartSheetPropsType = {
   isOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
+  mutateCart: KeyedMutator<CartType[]>;
 }
 
 
@@ -42,6 +44,7 @@ export default function CartSheet({
   isOpen, 
   closeCart, 
   openCart,
+  mutateCart
 }: CartSheetPropsType){
   // console.log(sheetCart); // { id: 5, restaurant_id: 'ChIJM88kepPfAGARiEXZJTN_Jc8', cart_items: Array(1), restaurantName: 'ハルハル', photoUrl: '/no-image.jpeg' }
   // console.log(cartCount); // 3 ... アイテムの数
@@ -69,7 +72,6 @@ export default function CartSheet({
     // console.log(value, cartItemId); // セレクト要素の番号 19
 
     if(!sheetCart) return; // nullの可能性を排除
-
     const quantity = Number(value); // selectの数を数値型に変換
 
     try {
@@ -77,11 +79,27 @@ export default function CartSheet({
       const data = await updateCartItemAction(quantity, cartItemId, sheetCart.id); // 数量、アイテムのid、どのカート(店舗)か
       // console.log(data);
 
+      // ⭐️ 即画面に反映させる　mutate
+      mutateCart(prevCarts => {
+        if(!prevCarts) return;
+
+        // ✅ 削除するを選択した場合 その商品自体がなくなる
+        if(quantity === 1) {
+          if(sheetCart.cart_items.length === 1) {
+            // カート自体を削除
+          }
+
+          // カートの中のアイテムを削除
+        }
+
+
+        // ✅ 数量を更新する場合
+      }, false); // ローカルのみ更新して再フェッチしない。
+
     } catch(error) {
       console.error(error);
       alert("エラーが発生しました。");
     }
-
   }
 
   return (

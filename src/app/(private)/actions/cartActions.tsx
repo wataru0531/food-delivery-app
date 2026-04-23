@@ -3,9 +3,13 @@
 
 "use server"
 
+import { getPlaceDetails } from "@/lib/restaurants/api";
 import { createClient } from "@/lib/supabase/server";
-import { MenuType } from "@/types";
+import { CartType, MenuType } from "@/types";
 import { redirect } from "next/navigation";
+
+type addToCartActionResponse = | { type: string; cart: CartType;} 
+                                | { type: string; id: number };
 
 
 // ✅ カートに商品を追加する処理
@@ -13,11 +17,12 @@ export async function addToCartAction(
   selectedItem: MenuType, // 追加したい商品
   quantity: number,       // 個数
   restaurantId: string    // 店舗のID
-) {
+): Promise<addToCartActionResponse> {
   // console.log(selectedItem, quantity, restaurantId);
   // { id: 56, name: '醤油ラーメン', price: 800, photoUrl: 'https://... '} 1 ChIJZZPMQQDfAGARxEZtPATdWew
 
   const supabase = await createClient();
+  const bucket = supabase.storage.from("menus"); // 👉 Supabaseのストレージを取得
   const { data: { user }, error: userError } = await supabase.auth.getUser();
 
   if(userError || !user) {
@@ -40,7 +45,7 @@ export async function addToCartAction(
     throw new Error("カートの取得に失敗しました。");
   }
   
-  // ✅ 既存のカートが存在しない場合、カートを新規作成 & アイテムを追加
+  // ✅ カートを新規作成 & アイテムを追加　... 既存のカートが存在しない場合
   if(!existingCart) {
     // ⭐️ cartsテーブルにレコードを挿入
     const { data: newCart, error: newCartError } = await supabase.from("carts").insert({
@@ -66,16 +71,73 @@ export async function addToCartAction(
       throw new Error("カートアイテムの追加に失敗しました。");
     }
 
-    return;
+    // ✅ カートのデータを取得
+    const { data: insertedCart, error: insertedCartError } = await supabase
+      .from("carts")
+      .select(`
+        id,
+        restaurant_id,
+        cart_items (
+          id,
+          quantity,
+          menus (
+            id,
+            name,
+            price,
+            image_path
+          )
+        )
+      `,
+      )
+      .eq("user_id", user.id)
+      .match({ user_id: user.id, id: newCart.id })
+      .single();
+
+      if(insertedCartError) {
+        console.error("カートデータの取得に失敗しました。", insertedCartError);
+        throw new Error(`カートデータの取得に失敗しました。${insertedCartError}`);
+      }
+
+      // ✅ 店舗データを取得
+      const { data: restaurantData, error } = await getPlaceDetails(
+        restaurantId,
+        ["displayName", "photos"],
+      );
+      
+      if(!restaurantData || error) new Error(`レストランデータの取得に失敗しました。${error}`);
+
+      // ✅ カートデータに、店舗の名前と画像のデータを追加
+      const updatedCart: CartType = {
+        ...insertedCart,
+        cart_items: insertedCart.cart_items.map((item) => {
+          const { image_path, ...restMenus } = item.menus; // 👉 ...を使うことで残りのプロパティを受け取れる
+          //     image_pathを除くことができる
+          const publicUrl = bucket.getPublicUrl(image_path).data.publicUrl;
+
+          return {
+            ...item,
+            menus: {
+              ...restMenus,
+              photoUrl: publicUrl,
+            },
+          };
+        }),
+        // → cart_itemsは、中のmenusのimage_pathをurlに編集して渡す
+        restaurantName: restaurantData?.displayName,
+        photoUrl: restaurantData?.photoUrl,
+      };
+
+    return { type: "new", cart: updatedCart };
   }
 
   // ✅ 既存のカートが存在する場合 →　そのアイテムの数量を更新
   // upsert → 更新か挿入かどちらか
-  const { error: upsertError } = await supabase.from("cart_items").upsert({
+  const { data, error: upsertError } = await supabase.from("cart_items").upsert({
     quantity: quantity,
     cart_id: existingCart.id,
     menu_id: selectedItem.id,
-  }, { onConflict: "cart_id,menu_id" }); // cart_id と menu_idのペアでチェックする
+  }, { onConflict: "cart_id,menu_id" }) // cart_id と menu_idのペアでチェックする
+  .select("id").single(); // 👉 1件分のidを取得
   //  cart_id と menu_idが同じなら、新たにレコードを挿入する
   //  → {cart_id: 1, menu_id: 10} このデータがすでにcart_itemsにあれば更新に切り替える
 
@@ -83,6 +145,8 @@ export async function addToCartAction(
     console.error("カートアイテムの追加・更新に失敗しました。");
     throw new Error("カートの取得に失敗しました。");
   }
+
+  return { type: "update", id: data.id };
 }
 
 // ✅ カートシートの時、select要素の数量を更新
@@ -133,7 +197,7 @@ export async function updateCartItemAction(
           console.error("カートの削除に失敗しました。", deleteCartError);
           throw new Error("カートの削除に失敗しました。");
         }
-        return;
+      return;
     }
 
     // ✅ カートの中にアイテムが複数の場合 → カート(店舗)の中のアイテム自体を削除するだけ

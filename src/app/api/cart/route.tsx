@@ -63,8 +63,7 @@ export async function GET(request: NextRequest) {
         ["displayName", "photos"],
       );
 
-      if (!restaurantData || error)
-        new Error(`レストランデータの取得に失敗しました。${error}`);
+      if(!restaurantData || error) new Error(`レストランデータの取得に失敗しました。${error}`);
 
       return {
         // Promiseオブジェクトで返る

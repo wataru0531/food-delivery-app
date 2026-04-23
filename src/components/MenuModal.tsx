@@ -15,9 +15,10 @@ import {
 import Image from "next/image";
 import { Button } from "./ui/button";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { CartType, MenuType } from "@/types";
+import { CartItemType, CartType, MenuType } from "@/types";
 import { useEffect, useState } from "react";
 import { addToCartAction } from "@/app/(private)/actions/cartActions";
+import { KeyedMutator } from "swr";
 // import { MenuType } from "@/types";
 
 type MenuModalType = {
@@ -27,6 +28,7 @@ type MenuModalType = {
   restaurantId: string;
   openCart: () => void;
   targetCart: CartType | null; // 現在選択中の店舗データを取得
+  mutateCart: KeyedMutator<CartType[]>;
 }
 
 
@@ -36,7 +38,8 @@ export default function MenuModal({
   selectedItem, 
   restaurantId, 
   openCart, 
-  targetCart 
+  targetCart,
+  mutateCart,
 }: MenuModalType) {
   // console.log(isOpen);
   // console.log(selectedItem); // {id: 20, name: '牛丼', price: 600, photoUrl: 'https://ndpohcdojjruiosbmyxz.supabase.co/storage/v1/object/public/menus/japanese/gyudon.webp'}
@@ -49,7 +52,7 @@ export default function MenuModal({
     setQuantity(Number(e.target.value)); 
   }
 
-  // ✅ 現在選択中の店舗のメニューのデータを取得
+  // ✅ 現在選択中の店舗のデータを取得
   const foundItem = targetCart ? targetCart?.cart_items.find(item => {
     // 全ての店舗の商品と、現在選択中の商品とを検証して取得
     return item.menus.id === selectedItem?.id;
@@ -66,15 +69,62 @@ export default function MenuModal({
   }, [ selectedItem, existingCartItem ]); // アイテムを選択するたびに発火。
                                           // useEffect内の変数は依存配列に含める
 
-
   // ✅ カートに商品を追加する処理 サーバーアクション
   const handleAddToCard = async () => {
     if(!selectedItem) return;
 
     try {
       // console.log(restaurantId);
-      // ⭐️ サーバーアクション.テーブルにテーブルに追加。商品、量、店舗のid
-      await addToCartAction(selectedItem, quantity, restaurantId);
+      // ⭐️ サーバーアクション。テーブルにテーブルに追加。商品、量、店舗のid
+      const response =  await addToCartAction(selectedItem, quantity, restaurantId);
+      // console.log(response); // タイプ、追加した商品のid
+
+      // 商品を追加した時に、データを再取得するので再レンダリングすることができる
+      // → これを呼び出すことで、useCartの、/api/cart のエンドポイントが再フェッチされる
+      //   👉 余計なデータまでも取得したりしてしまうので、ここで直接更新していく
+      mutateCart((prevCarts: CartType[] | undefined) => { // 👉 SWRで管理している既存のcarts。取得できるまではundefined
+        // console.log(prevCarts); // 👉 今画面上に表示されているデータ
+        // 👉 すぐに画面を更新するのであれば、引数のprevCartsを更新していく
+        if(!prevCarts) return;
+
+        // 選択中の店舗がない場合
+        if(response.type === "new") {
+          // ✅ カートを新規作成
+          const { cart } = response; // 挿入したカートデータを取得
+
+          return [...prevCarts, cart];
+        }
+
+        if(!targetCart) return;
+        const cart = { ...targetCart }; // そのままのカートのオブジェクトでは更新できないのでコピーする
+
+        // すでにカートがある場合
+        if(existingCartItem) {
+          // ✅ 数量更新
+          cart.cart_items = cart.cart_items.map(item => {
+            // カートにアイテムがある場合(idで判定)は、カートの数量を更新
+            return item.id === existingCartItem.id ? { ...item, quantity: quantity }
+                                                    : item; 
+          })
+
+        } else {
+          // ✅ アイテムを追加
+          const newCartItem: CartItemType = {
+            id: response.id,
+            menus: {
+              id: selectedItem.id,
+              name: selectedItem.name,
+              price: selectedItem.price,
+              photoUrl: selectedItem.photoUrl,
+            },
+            quantity: quantity,
+          }
+          cart.cart_items = [...cart.cart_items, newCartItem];
+        }
+
+        // 更新したcartのidと一致するなら、更新したカートを返す。そうでないカートはそのまま返す
+        return prevCarts.map(prevCart => prevCart.id === cart.id ? cart : prevCart );
+      }, false); // 👉 データを再取得しない
 
       openCart(); // カートシートを開く
       closeModal(); // モーダルを閉じる

@@ -29,7 +29,7 @@ const MenuContent = ({ categoryMenus, restaurantId }: MenuContentProps) => {
 
   // ✅ その店舗のカートのデータを取得
   // targetCart → 現在のページのカートのデータ
-  const { targetCart } = useCart(restaurantId);
+  const { targetCart, mutateCart } = useCart(restaurantId);
   // console.log(targetCart); // {id: 10, restaurant_id: 'ChIJZZPMQQDfAGARxEZtPATdWew', cart_items: Array(4), restaurantName: 'RAMEN JUNKEYZ', photoUrl: '/no-image.jpeg'}
 
   // どのカテゴリのidを選択しているか
@@ -137,6 +137,7 @@ const MenuContent = ({ categoryMenus, restaurantId }: MenuContentProps) => {
         restaurantId={ restaurantId }
         openCart={ openCart }
         targetCart={ targetCart }
+        mutateCart={ mutateCart }
       />
     </div>
   );

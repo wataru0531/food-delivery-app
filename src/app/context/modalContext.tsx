@@ -29,7 +29,6 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     setIsOpen(false);
     
     setTimeout(() => setSelectedItem(null), 200)
-    
   }
 
   return (

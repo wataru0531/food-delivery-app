@@ -20,8 +20,8 @@ export default function Cart(){
   const { restaurantId } = useParams<{restaurantId?: string}>(); // urlパラメータを取得。動的な値を取得できる
                                                                 //  undefinedにもなる
   
-  // ✅ ユーザーに紐づいたカート、アイテム、商品を全て取得
-  const { carts, cartsError, isLoading, targetCart } = useCart(restaurantId);
+  // ✅ ユーザーに紐づいたカート、アイテム、商品を全て取得。useSWR
+  const { carts, cartsError, isLoading, targetCart, mutateCart } = useCart(restaurantId);
   // console.log(carts);
   // [{ id: 1, restaurant_id: "ChIJZZPMQQDfAGARxEZtPATdWew", restaurantName: "RAMEN JUNKEYZ", photoUrl: "/no-image.jpeg", cart_items: [{ ... }, { ... }] }]
 
@@ -36,6 +36,17 @@ export default function Cart(){
   const { displayMode, sheetCart, cartCount } = computeCartDisplayLogic(carts, selectedCart, targetCart);
   // console.log(displayMode);
   // console.log(sheetCart)
+
+  // ✅ carts(店舗)のデータが変更した場合にステートを更新
+  useEffect(() => {
+    if(!carts || !selectedCart) return; // カートがない場合、カートが未選択の時は処理終了
+
+    // 選択しているカート(店舗)を取得
+    const updatedCart = carts.find(cart => cart.id === selectedCart.id) ?? null;
+    // console.log(updatedCart); // {id: 11, restaurant_id: 'ChIJM88kepPfAGARiEXZJTN_Jc8', cart_items: Array(2), restaurantName: 'ハルハル', photoUrl: '/no-image.jpeg'}
+
+    setSelectedCart(updatedCart); // 上書き
+  }, [ carts ]);
 
   // ✅ リスト形式の開閉状態を監視。
   useEffect(() => {
@@ -67,6 +78,7 @@ export default function Cart(){
       isOpen={ isOpen } 
       openCart={ openCart }
       closeCart={ closeCart }
+      mutateCart={ mutateCart }
     />
   ) : (
     // ✅ カートが2件以上の時 → ドロップダウン
