@@ -75,27 +75,57 @@ export default function CartSheet({
     const quantity = Number(value); // selectの数を数値型に変換
 
     try {
-       // 更新。サーバーアクション
+       // 更新。サーバーアクション → DBのデータを変更
       const data = await updateCartItemAction(quantity, cartItemId, sheetCart.id); // 数量、アイテムのid、どのカート(店舗)か
       // console.log(data);
 
-      // ⭐️ 即画面に反映させる　mutate
-      mutateCart(prevCarts => {
-        if(!prevCarts) return;
+      // ⭐️ 即画面に反映させる　mutate → フロントのUIを更新
+      //    → ここではサーバーアクションでDBを更新して、フロントのUIを自分で更新する必要がある
+      const copyCart = {...sheetCart}; // SWRの値を直接反映はできないのでコピーを用意する
 
-        // ✅ 削除するを選択した場合 その商品自体がなくなる
-        if(quantity === 1) {
-          if(sheetCart.cart_items.length === 1) {
-            // カート自体を削除
-          }
+      // ✅ 削除するを選択した場合 その商品自体がなくなる
+      if(quantity === 0) {
+        if(sheetCart.cart_items.length === 1) {
+          closeCart();
 
-          // カートの中のアイテムを削除
+          setTimeout(() => { // スライドが閉じ切ってから更新させる
+            mutateCart(prevCarts => {
+              if(!prevCarts) return;
+
+              // 店舗カート自体を削除 → 店舗カートのアイテムが残り1つの時。配列から削除
+              return prevCarts.filter(c => c.id !== sheetCart.id);
+            }, false); // ローカルのキャッシュのみ更新して、DBから再フェッチしない。
+          }, 200)
+          
+          return;
         }
 
+        // ✅ 店舗カートの中のアイテムを削除 → 店舗カートのアイテムが複数
+        copyCart.cart_items = copyCart.cart_items.filter((cartItem) => {
+          return cartItem.id !== cartItemId; // 削除対象のアイテム以外を取得
+        });
 
-        // ✅ 数量を更新する場合
-      }, false); // ローカルのみ更新して再フェッチしない。
+        // キャッシュを更新
+        mutateCart(prevCarts => { // 画面に反映 = キャッシュを更新
+            return prevCarts?.map(cart => {
+              return cart.id === copyCart.id ? copyCart : cart;
+            })
+          }, false);
 
+          return;
+        }
+
+        // ✅ 数量のみを更新する場合
+        copyCart.cart_items = copyCart.cart_items.map(item => {
+          return item.id === cartItemId ? { ...item, quantity: quantity } : item
+        });
+
+        mutateCart(prevCarts => { // 画面に反映 = キャッシュを更新
+          return prevCarts?.map(cart => {
+            return cart.id === copyCart.id ? copyCart : cart;
+          });
+        }, false);
+        
     } catch(error) {
       console.error(error);
       alert("エラーが発生しました。");
@@ -187,12 +217,12 @@ export default function CartSheet({
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
-                        <label htmlFor="quantity" className="sr-only">
+                        <label htmlFor={`quantity-${item.id}`} className="sr-only">
                           数量
                         </label>
                         <select 
                           name="quantity" 
-                          id="quantity" 
+                          id={`quantity-${item.id}`}
                           className="border rounded-full pr-8 pl04 bg-muted h-9"
                           value={item.quantity}
                           onChange={ (e:React.ChangeEvent<HTMLSelectElement, HTMLSelectElement>) => handleUpdateCurtItem(e.target.value, item.id) }
