@@ -2,18 +2,18 @@
 // /lib/cart/.utils.tsx
 // ✅ カートの数によって表示を切り替える
 
-import { CartType } from "@/types";
+import { CartItemType, CartType } from "@/types";
 
 
 // ✅　カートアイテムのquantityの合計を求める
-function sumItems(cart: CartType) {
+export function sumItems(cartItems: CartItemType[]) {
   // [{ id: 1, restaurant_id: "ChIJZZPMQQDfAGARxEZtPATdWew", restaurantName: "RAMEN JUNKEYZ", photoUrl: "/no-image.jpeg", cart_items: [{ ... }, { ... }] }]
   
   // console.log(cart.cart_items.reduce((sum, item) => {
   //   return sum + item.quantity
   // }, 0)); // 4
 
-  return cart.cart_items.reduce((sum, item) => { // 合計値, アイテム。初めのsumを0にする
+  return cartItems.reduce((sum, item) => { // 合計値, アイテム。初めのsumを0にする
     return sum + item.quantity
   }, 0)
 }
@@ -37,7 +37,7 @@ export function computeCartDisplayLogic(
     const only = carts[0];
     // console.log(only)
     // console.log(sumItems(only));
-    return { displayMode: "cartSheet", sheetCart: only, cartCount: sumItems(only) }
+    return { displayMode: "cartSheet", sheetCart: only, cartCount: sumItems(only.cart_items) }
   }
 
   // ✅　選択されたカートがある場合 → 複数の店舗で買い物をしてドロップダウンの店舗をクリックした時
@@ -45,7 +45,7 @@ export function computeCartDisplayLogic(
     return {
       displayMode: "cartSheet", // シートで表示
       sheetCart: selectedCart, // 表示したい店舗のデータ
-      cartCount: sumItems(selectedCart), // 合計数
+      cartCount: sumItems(selectedCart.cart_items), // 合計数
     }
   }
 
@@ -55,12 +55,11 @@ export function computeCartDisplayLogic(
     return {
       displayMode: "cartSheet",
       sheetCart: targetCart,
-      cartCount: sumItems(targetCart)
+      cartCount: sumItems(targetCart.cart_items)
     }
   }
   
   // カートに2つ以上のお店
   return { displayMode: "cartDropDown", sheetCart: null, cartCount: 0 };
-
 }
 

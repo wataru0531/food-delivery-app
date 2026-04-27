@@ -16,8 +16,8 @@ type CheckoutPageType = {
 
 export default async function CheckoutPage({ params }: CheckoutPageType) {
   // console.log(params); // ReactPromise {status: 'pending', value: null, reason: null, _children: Array(0), _debugChunk: null, …}
-  const { restaurantId } = await params; // → []フォルダの値が渡ってくる
-  // console.log(result); // {restaurantId: 'ChIJK6kOh-LfAGARdOxPses4qXU'}
+  const { restaurantId } = await params; // → [restaurantId]フォルダのrestaurantIdが渡ってくる
+  // console.log(result); // { restaurantId: 'ChIJK6kOh-LfAGARdOxPses4qXU' }
 
 
   return (

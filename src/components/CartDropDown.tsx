@@ -15,8 +15,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CartItemType, CartType } from "@/types";
+import { CartType } from "@/types";
 import { SetStateAction } from "react";
+import { sumItems } from "@/lib/cart/utils";
+import { calculateSubTotal } from "@/lib/restaurants/utils";
 
 type CartDropDownType = {
   carts: CartType[]; // 👉 useSWRでデータを取得するまではundefinedになるため
@@ -28,31 +30,6 @@ type CartDropDownType = {
 export default function CartDropDown({ carts, setSelectedCart, openCart }: CartDropDownType) {
   // console.log(carts); 
   // [{id: 10, restaurant_id: 'ChIJZZPMQQDfAGARxEZtPATdWew', cart_items: [{id: 19, menus: {id: 56, name: '醤油ラーメン', price: 800, photoUrl: 'https://ndpohcdojjruiosbmyxz.supabase.co/storage/v1/object/public/menus/ramen/shoyu-ramen.webp'}, quantity: 3}, {}, ...], restaurantName: 'RAMEN JUNKEYZ', photoUrl: '/no-image.jpeg'}, {}, ...]
-
-  // ✅　カートのアイテムの合計金額を計算
-  const calculateItemTotal = (item: CartItemType) => {
-    // console.log(item);
-    // {id: 10, restaurant_id: 'ChIJZZPMQQDfAGARxEZtPATdWew', cart_items: [ {id: 19, menus: {id: 56, name: '醤油ラーメン', price: 800, photoUrl: 'https://ndpohcdojjruiosbmyxz.supabase.co/storage/v1/object/public/menus/ramen/shoyu-ramen.webp'}, quantity: 3}], restaurantName: 'RAMEN JUNKEYZ', photoUrl: '/no-image.jpeg'}
-    return item.quantity * item.menus.price;
-  }
-
-  // ✅ 小計を算出
-  const calculateSubTotal = (cartItems: CartItemType[]) => {
-    // console.log(items); // (3) [{id: 19, menus: {id: 56, name: '醤油ラーメン', price: 800, photoUrl: 'https://ndpohcdojjruiosbmyxz.supabase.co/storage/v1/object/public/menus/ramen/shoyu-ramen.webp'}, quantity: 3}, {…}, {…}]
-
-    return cartItems.reduce((accu, curr) => {
-      // console.log(accu, curr)
-      return accu + calculateItemTotal(curr);
-    }, 0)
-  }
-
-  // ✅ その店舗での商品の合計数を算出
-  const calculateTotalQuantity = (cartItems: CartItemType[]) => {
-    // console.log(cartItems);
-    return cartItems.reduce((accu, curr) => {
-      return accu + curr.quantity
-    }, 0)
-  }
 
   return (
     <DropdownMenu>
@@ -89,7 +66,7 @@ export default function CartDropDown({ carts, setSelectedCart, openCart }: CartD
                 </div>
               </div>
               <div className="flex items-center justify-center size-7 font-medium rounded-full bg-primary text-popover text-xs">
-                { calculateTotalQuantity(cart.cart_items) }
+                { sumItems(cart.cart_items) }
               </div>
             </DropdownMenuItem>
           ))
