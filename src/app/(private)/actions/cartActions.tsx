@@ -225,5 +225,64 @@ export async function updateCartItemAction(
     console.error("カートアイテムの更新に失敗しました。", updateError);
     throw new Error("カートアイテムの更新に失敗しました。");
   }
+}
+
+
+// ✅ 注文を確定させる処理　CartSummary.tsx
+export async function checkoutAction(cartId: number) {
+  const supabase =  await createClient();
+
+  // ① カートデータを取得 → carts、cart_items、menusのテーブル
+  const { data: cart, error: cartsError } = await supabase
+    .from("carts")
+    .select(
+      `
+        id,
+        restaurant_id,
+        user_id,
+        cart_items (
+          id,
+          quantity,
+          menus (
+            id,
+            name,
+            price,
+            image_path
+          )
+        )
+      `,
+    )
+    .eq("id", cartId) // cartsテーブルの各idの中で、注文対象のカートのidと一致するデータを取得
+    .single(); // 1件分のデータ
+
+    // console.log(cart);
+    // {
+    //   id: 16,
+    //   restaurant_id: 'ChIJZZPMQQDfAGARxEZtPATdWew',
+    //   user_id: 'c20491c0-16c7-4ede-b73f-eb289a45fc97',
+    //   cart_items: [
+    //     { id: 45, menus: {id: 57, name: '味噌ラーメン', price: 850, image_path: 'ramen/miso-ramen.webp'}, quantity: 2 },
+    //     { id: 44, menus: [Object], quantity: 3 }
+    //   ]
+    // }
+  
+  // エラー処理 → クライアントのtry catchで拾う。error.tsxはレンダリング中のエラーを拾う
+  if(cartsError) {
+    console.error("カートの取得に失敗しました。", cartsError);
+    throw new Error("カートの取得に失敗しました。")
+  }
+
+  // ② ordersテーブルにデータ挿入
+  const {} = supabase.from("orders").insert({
+    restaurant_id: cart.restaurant_id,
+    user_id: cart.user_id,
+
+
+  })
+
+  // ③ orders_itemsテーブルにデータ挿入
+
+  // ④ カートデータを削除
 
 }
+

@@ -23,7 +23,7 @@ import { useCart } from "@/fooks/cart/useCart";
 import CartSkeleton from "./CartSkeleton";
 import { sumItems } from "@/lib/cart/utils";
 import { calculateItemTotal, calculateSubTotal } from "@/lib/restaurants/utils";
-import { updateCartItemAction } from "@/app/(private)/actions/cartActions";
+import { checkoutAction, updateCartItemAction } from "@/app/(private)/actions/cartActions";
 import { useRouter } from "next/navigation";
 
 type CartSummaryPropsType = {
@@ -132,6 +132,18 @@ const CartSummary = ({ restaurantId }: CartSummaryPropsType) => {
     }
   }
 
+  // ✅ 注文を確定する処理
+  const handleCheckout = async () => {
+    try {
+      // カートのid
+      await checkoutAction(cart.id);
+
+    } catch(error) {
+      console.error(error);
+      alert(`注文の確定に失敗しました。${error}`);
+    }
+  }
+
 
   return (
     <Card className="max-w-md min-w-[420px]">
@@ -152,7 +164,12 @@ const CartSummary = ({ restaurantId }: CartSummaryPropsType) => {
           </div>
           <ChevronRight size={16} />
         </Link>
-        <Button className="cursor-pointer">本ページの内容を確認の上、注文を確定する</Button>
+        <Button 
+          className="cursor-pointer"
+          onClick={ handleCheckout }
+        >
+          本ページの内容を確認の上、注文を確定する
+        </Button>
       </CardHeader>
 
       {/* コンテンツ */}
