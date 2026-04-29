@@ -134,7 +134,43 @@ export type Database = {
         }
         Relationships: []
       }
-      order_items: {
+      orders: {
+        Row: {
+          created_at: string
+          delivery: number
+          fee: number
+          id: number
+          restaurant_id: string
+          service: number
+          subtotal_price: number
+          total_price: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delivery: number
+          fee: number
+          id?: number
+          restaurant_id: string
+          service: number
+          subtotal_price: number
+          total_price: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delivery?: number
+          fee?: number
+          id?: number
+          restaurant_id?: string
+          service?: number
+          subtotal_price?: number
+          total_price?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      orders_items: {
         Row: {
           created_at: string
           id: number
@@ -181,42 +217,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      orders: {
-        Row: {
-          created_at: string
-          delivery: number
-          fee: number
-          id: number
-          restaurant_id: string
-          service: number
-          subtotal_price: number
-          total_price: number
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          delivery: number
-          fee: number
-          id?: number
-          restaurant_id: string
-          service: number
-          subtotal_price: number
-          total_price: number
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          delivery?: number
-          fee?: number
-          id?: number
-          restaurant_id?: string
-          service?: number
-          subtotal_price?: number
-          total_price?: number
-          user_id?: string
-        }
-        Relationships: []
       }
       profiles: {
         Row: {

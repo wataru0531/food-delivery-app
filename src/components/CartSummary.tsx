@@ -136,7 +136,8 @@ const CartSummary = ({ restaurantId }: CartSummaryPropsType) => {
   const handleCheckout = async () => {
     try {
       // カートのid
-      await checkoutAction(cart.id);
+      // 小計と合計はサーバーで計算。クライアントでは悪意のあるユーザーがいる場合があるのでサーバーで計算する
+      await checkoutAction(cart.id, fee, service, delivery);
 
     } catch(error) {
       console.error(error);

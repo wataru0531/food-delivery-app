@@ -229,7 +229,8 @@ export async function updateCartItemAction(
 
 
 // ✅ 注文を確定させる処理　CartSummary.tsx
-export async function checkoutAction(cartId: number) {
+export async function checkoutAction(cartId: number, fee: number, service: number, delivery: number) {
+  // console.log(cartId);
   const supabase =  await createClient();
 
   // ① カートデータを取得 → carts、cart_items、menusのテーブル
@@ -243,6 +244,7 @@ export async function checkoutAction(cartId: number) {
         cart_items (
           id,
           quantity,
+          menu_id,
           menus (
             id,
             name,
@@ -272,17 +274,65 @@ export async function checkoutAction(cartId: number) {
     throw new Error("カートの取得に失敗しました。")
   }
 
+  const { restaurant_id, user_id, cart_items } = cart;
+
+  // カートのアイテムの小計を計算
+  const subtotal = cart_items.reduce((accu, curr) => {
+    // console.log(accu, curr);
+    return accu + (curr.quantity * curr.menus.price);
+  }, 0);
+
+  const total = fee + service + delivery + subtotal; // 合計金額
+
   // ② ordersテーブルにデータ挿入
-  const {} = supabase.from("orders").insert({
-    restaurant_id: cart.restaurant_id,
-    user_id: cart.user_id,
+  const { error: orderError, data: order } = await supabase.from("orders").insert({
+    restaurant_id: restaurant_id,
+    user_id: user_id,
+    fee: fee,
+    service: service,
+    delivery: delivery,
+    subtotal_price: subtotal,
+    total_price: total,
+  }).select("id").single(); // 👉 ordersテーブルのidを取得 ... order_itemsテーブルに挿入時に使う
+  // console.log(order); // { id: 10 }
 
-
-  })
+  if(orderError) {
+    console.error("注文の作成に失敗しました。");
+    throw new Error("注文の作成に失敗しました。");
+  }
 
   // ③ orders_itemsテーブルにデータ挿入
+  //    cart_itemsテーブルを挿入するイメージ
+  const orderItems = cart_items.map(item => {
+    return { // 挿入するcart_itemsを作成
+      quantity: item.quantity,
+      order_id: order.id, // ordersテーブルのid
+      menu_id: item.menu_id,
+      price: item.menus.price,
+      name: item.menus.name,
+      image_path: item.menus.image_path,
+    }
+  });
+  console.log(orderItems);
+
+  const { error: ordersItemsError } = await supabase.from("orders_items").insert(orderItems)
+
+  if(ordersItemsError) {
+    console.error("order_itemsテーブルへのデータ挿入に失敗しました。", ordersItemsError);
+    throw new Error("order_itemsテーブルへのデータ挿入に失敗しました。");
+  }
 
   // ④ カートデータを削除
+  const { error: cartDeleteError } = await supabase.from("carts")
+    .delete()
+    .eq("id", cartId); // cartsテーブルの中で、指定したカートのidとで一致したカートを1件削除
 
+  if(cartDeleteError) {
+    console.error("カートの削除に失敗しました。", cartDeleteError);
+    throw new Error("カートの削除に失敗しました。");
+  }
 }
 
+
+
+// pnpm dlx supabase gen types typescript --project-id ndpohcdojjruiosbmyxz --schema public > database.types.ts
