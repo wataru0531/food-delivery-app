@@ -151,3 +151,29 @@ export type CartType = {
   restaurant_id: string;
   cart_items: CartItemType[];
 }
+
+// ✅ 商品1つの型
+export type OrderItemsType = {
+  photoUrl: string;
+  id: number;
+  price: number;
+  quantity: number;
+  name: string;
+}
+
+// ✅ 注文履歴 orders
+export type OrderType = {
+  // 👉 order_itemsはDBから取れないので消しておく
+  // order_items: OrderItemsType[];
+
+  restaurantName: string;
+  photoUrl: string;
+  id: number;
+  restaurant_id: string;
+  created_at: string;
+  fee: number;
+  service: number;
+  delivery: number;
+  subtotal_price: number;
+  total_price: number;
+}

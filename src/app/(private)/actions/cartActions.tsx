@@ -306,6 +306,7 @@ export async function checkoutAction(
     throw new Error("注文の作成に失敗しました。");
   }
 
+  // 
   // ③ order_itemsテーブルにデータ挿入
   //    cart_itemsテーブルを挿入するイメージ
   const orderItems = cart_items.map(item => ({
@@ -319,16 +320,13 @@ export async function checkoutAction(
   }));
   // console.log(orderItems);
 
+  // ✅ TODO 挿入できない
   // const { error: orderItemsError } = await supabase.from("order_items").insert(orderItems)
 
-  const { error: orderItemsError } = await supabase
-    .from("order_items")
-    .insert(orderItems);
-
-  if(orderItemsError) {
-    console.error("order_itemsテーブルへのデータ挿入に失敗しました。", orderItemsError);
-    throw new Error("order_itemsテーブルへのデータ挿入に失敗しました。");
-  }
+  // if(orderItemsError) {
+  //   console.error("order_itemsテーブルへのデータ挿入に失敗しました。", orderItemsError);
+  //   throw new Error("order_itemsテーブルへのデータ挿入に失敗しました。");
+  // }
 
   // ④ カートデータを削除。カートに入っていた商品を削除
   const { error: cartDeleteError } = await supabase.from("carts")

@@ -65,7 +65,10 @@ export async function GET(request: NextRequest) {
         ["displayName", "photos"],
       );
 
-      if(!restaurantData || error) new Error(`レストランデータの取得に失敗しました。${error}`);
+      if(!restaurantData || error) {
+        // new Error(`レストランデータの取得に失敗しました。${error}`)
+        console.error(`レストランデータの取得に失敗しました。${error}`);
+      };
 
       return {
         // Promiseオブジェクトで返る
@@ -84,8 +87,8 @@ export async function GET(request: NextRequest) {
           };
         }),
         // → cart_itemsは、中のmenusのimage_pathをurlに編集して渡す
-        restaurantName: restaurantData?.displayName,
-        photoUrl: restaurantData?.photoUrl,
+        restaurantName: restaurantData?.displayName ?? "不明なお店",
+        photoUrl: restaurantData?.photoUrl ?? "/no-image.jpeg",
       };
     });
 

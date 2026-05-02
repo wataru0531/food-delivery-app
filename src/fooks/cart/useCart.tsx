@@ -8,8 +8,7 @@ import useSWR from "swr";
 //    ここでは、Route HandlerのGETがキャッシュされているわけではない。
 const fetcher = async (url: string) => {
   const response = await fetch(url); // `/api/cart`。ここでroute.tsxのGETが動く
-                                     // 
-
+                                    
   if(!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.error);

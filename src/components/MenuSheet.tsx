@@ -1,5 +1,6 @@
 
 // MenuSheet
+// 左から出てくるmenyu-eria
 
 import {
   Sheet,
@@ -78,7 +79,7 @@ export default async function MenuSheet() {
         {/* メニューエリア */}
         <ul className="space-y-4">
           <li>
-            <Link href={"orders"} className="flex items-center gap-4">
+            <Link href={"/orders"} className="flex items-center gap-4">
               <div>
                 <Bookmark color="bg-primary" fill="bg-primary" />
               </div>

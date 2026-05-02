@@ -139,12 +139,21 @@ const CartSummary = ({ restaurantId }: CartSummaryPropsType) => {
       // 小計と合計はサーバーで計算。クライアントでは悪意のあるユーザーがいる場合があるのでサーバーで計算する
       await checkoutAction(cart.id, fee, service, delivery);
 
+      // カートデータはSWRで管理しているのでキャッシュを更新
+      mutateCart(prevCarts => {
+        return prevCarts?.filter(prevCart => {
+          return prevCart.id !== cart.id; // 注文対象以外のカートを残してキャッシュに保持
+        })
+      }, false); // 更新後にデータを再フェッチしない
+
+      // ✅ 注文完了ページに移動
+      router.push(`/restaurant/${restaurantId}/checkout/complete`);
+
     } catch(error) {
       console.error(error);
       alert(`注文の確定に失敗しました。${error}`);
     }
   }
-
 
   return (
     <Card className="max-w-md min-w-[420px]">
