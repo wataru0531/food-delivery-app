@@ -2,10 +2,9 @@
 // 注文完了ページ
 // restaurant/[restaurantId]/checkout/complete/page.tsx
 
-import DeliveryAnimation from "@/components/DeloveryAnimation";
+import DeliveryAnimation from "@/components/DeliveryAnimation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
 
 
 export default async function CheckoutCompletePage(){

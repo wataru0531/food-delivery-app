@@ -19,7 +19,6 @@ export default async function CheckoutPage({ params }: CheckoutPageType) {
   const { restaurantId } = await params; // → [restaurantId]フォルダのrestaurantIdが渡ってくる
   // console.log(result); // { restaurantId: 'ChIJK6kOh-LfAGARdOxPses4qXU' }
 
-
   return (
     <div className="flex gap-4 p-10">
       {/* 左側エリア */}

@@ -25,13 +25,17 @@ export default async function OrdersPage(){
   //   },
   //   ...
   // ]
-  // 👉 order_itemsは、order_itemsテーブルからデータが取得できないため入れない
+  // 👉 order_itemsは、order_itemsテーブルからデータが取得できないため入れられない
+
+  if(orders.length === 0) {
+    return <div className="">注文履歴がありません。</div>
+  }
 
   return(
-    <div>
+    <div className="space-y-6">
       {
         orders.map(order => (
-          <OrderCard key={ order.id } />
+          <OrderCard key={ order.id } order={ order }/>
         ))
       }
     </div>

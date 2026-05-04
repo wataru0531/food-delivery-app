@@ -30,7 +30,8 @@ export async function fetchOrders(): Promise<OrderType[]>{
     delivery,
     subtotal_price,
     total_price
-  `).eq("user_id", user.id); // ordersテーブルのidと、ログインユーザーのidが一致
+  `).eq("user_id", user.id) // ordersテーブルのidと、ログインユーザーのidが一致
+    .order("created_at"); // created_at が新しい順から
 
   // ✅ order_itemsテーブルはエラーで取得できない状態 ...
   // .select(`
